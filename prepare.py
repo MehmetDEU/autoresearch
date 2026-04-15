@@ -343,7 +343,7 @@ def make_dataloader(tokenizer, B, T, split, buffer_size=1000):
         cpu_inputs.copy_(row_buffer[:, :-1])
         cpu_targets.copy_(row_buffer[:, 1:])
         # Non-blocking pinned-memory copies are CUDA-specific; keep MPS/CPU synchronous.
-        gpu_buffer.copy_(cpu_buffer, non_blocking=use_pinned_memory)
+        gpu_buffer.copy_(cpu_buffer)
         yield inputs, targets, epoch
 
 # ---------------------------------------------------------------------------
