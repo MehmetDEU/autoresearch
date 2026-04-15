@@ -7,12 +7,10 @@ Usage: uv run train.py
 import os
 os.environ["PYTORCH_ALLOC_CONF"] = "expandable_segments:True"
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
-os.environ.setdefault("PYTHONUNBUFFERED", "1")
 
 import gc
 import math
 import time
-from contextlib import nullcontext
 from dataclasses import dataclass, asdict
 
 import torch
@@ -21,9 +19,6 @@ import torch.nn.functional as F
 
 from prepare import MAX_SEQ_LEN, TIME_BUDGET, Tokenizer, make_dataloader, evaluate_bpb
 
-
-def log(msg):
-    print(msg, flush=True)
 
 # ---------------------------------------------------------------------------
 # GPT Model
@@ -91,7 +86,7 @@ class CausalSelfAttention(nn.Module):
         q, k = norm(q), norm(k)
         v = v.to(dtype=q.dtype)
 
-        # Native SDPA path (works on CUDA and Apple Silicon MPS).
+        # Native SDPA path.
         q = q.transpose(1, 2)  # (B, n_head, T, head_dim)
         k = k.transpose(1, 2)  # (B, n_kv_head, T, head_dim)
         v = v.transpose(1, 2)  # (B, n_kv_head, T, head_dim)
@@ -366,17 +361,17 @@ class MuonAdamW(torch.optim.Optimizer):
 
     def __init__(self, param_groups):
         super().__init__(param_groups, defaults={})
-        # 0-D CPU tensors to avoid torch.compile recompilation when values change
-        self._adamw_step_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
-        self._adamw_lr_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
-        self._adamw_beta1_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
-        self._adamw_beta2_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
-        self._adamw_eps_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
-        self._adamw_wd_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
-        self._muon_momentum_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
-        self._muon_lr_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
-        self._muon_wd_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
-        self._muon_beta2_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
+        # MPS-native scalar state tensors.
+        self._adamw_step_t = torch.tensor(0.0, dtype=torch.float32, device="mps")
+        self._adamw_lr_t = torch.tensor(0.0, dtype=torch.float32, device="mps")
+        self._adamw_beta1_t = torch.tensor(0.0, dtype=torch.float32, device="mps")
+        self._adamw_beta2_t = torch.tensor(0.0, dtype=torch.float32, device="mps")
+        self._adamw_eps_t = torch.tensor(0.0, dtype=torch.float32, device="mps")
+        self._adamw_wd_t = torch.tensor(0.0, dtype=torch.float32, device="mps")
+        self._muon_momentum_t = torch.tensor(0.0, dtype=torch.float32, device="mps")
+        self._muon_lr_t = torch.tensor(0.0, dtype=torch.float32, device="mps")
+        self._muon_wd_t = torch.tensor(0.0, dtype=torch.float32, device="mps")
+        self._muon_beta2_t = torch.tensor(0.0, dtype=torch.float32, device="mps")
 
     def _step_adamw(self, group):
         for p in group['params']:
@@ -456,37 +451,24 @@ FINAL_LR_FRAC = 0.0     # final LR as fraction of initial
 
 # Model size
 DEPTH = 8               # number of transformer layers
-DEVICE_BATCH_SIZE = 16  # per-device batch size (reduce if OOM)
+DEVICE_BATCH_SIZE = 8   # fixed for maximum MPS stability
 
 # ---------------------------------------------------------------------------
 # Setup: tokenizer, model, optimizer, dataloader
 # ---------------------------------------------------------------------------
 
 t_start = time.time()
-log("[startup] initializing runtime")
 torch.manual_seed(42)
-if torch.cuda.is_available():
-    torch.cuda.manual_seed(42)
 torch.set_float32_matmul_precision("high")
-if torch.backends.mps.is_available():
-    device = torch.device("mps")
-elif torch.cuda.is_available():
-    device = torch.device("cuda")
-else:
-    device = torch.device("cpu")
-autocast_ctx = torch.amp.autocast(device_type="cuda", dtype=torch.bfloat16) if device.type == "cuda" else nullcontext()
+device = torch.device("mps")
 H100_BF16_PEAK_FLOPS = 989.5e12
 
 def device_synchronize():
-    if device.type == "cuda":
-        torch.cuda.synchronize()
-    elif device.type == "mps":
-        torch.mps.synchronize()
+    torch.mps.synchronize()
 
 tokenizer = Tokenizer.from_directory()
-log("[startup] tokenizer loaded")
 vocab_size = tokenizer.get_vocab_size()
-log(f"Vocab size: {vocab_size:,}")
+print(f"Vocab size: {vocab_size:,}")
 
 def build_model_config(depth):
     base_dim = depth * ASPECT_RATIO
@@ -499,24 +481,20 @@ def build_model_config(depth):
     )
 
 config = build_model_config(DEPTH)
-log(f"Model config: {asdict(config)}")
+print(f"Model config: {asdict(config)}")
 
 with torch.device("meta"):
     model = GPT(config)
 model.to_empty(device=device)
 model.init_weights()
-log("[startup] model allocated and initialized")
 
 param_counts = model.num_scaling_params()
-log("Parameter counts:")
+print("Parameter counts:")
 for key, value in param_counts.items():
-    log(f"  {key:24s}: {value:,}")
+    print(f"  {key:24s}: {value:,}")
 num_params = param_counts['total']
 num_flops_per_token = model.estimate_flops()
-log(f"Estimated FLOPs per token: {num_flops_per_token:e}")
-
-if device.type == "mps":
-    DEVICE_BATCH_SIZE = min(DEVICE_BATCH_SIZE, 16)
+print(f"Estimated FLOPs per token: {num_flops_per_token:e}")
 
 tokens_per_fwdbwd = DEVICE_BATCH_SIZE * MAX_SEQ_LEN
 assert TOTAL_BATCH_SIZE % tokens_per_fwdbwd == 0
@@ -531,15 +509,11 @@ optimizer = model.setup_optimizer(
     weight_decay=WEIGHT_DECAY,
 )
 
-if device.type == "cuda":
-    model = torch.compile(model, dynamic=False)
-
 train_loader = make_dataloader(tokenizer, DEVICE_BATCH_SIZE, MAX_SEQ_LEN, "train")
 x, y, epoch = next(train_loader)  # prefetch first batch
-log("[startup] first batch prefetched")
 
-log(f"Time budget: {TIME_BUDGET}s")
-log(f"Gradient accumulation steps: {grad_accum_steps}")
+print(f"Time budget: {TIME_BUDGET}s")
+print(f"Gradient accumulation steps: {grad_accum_steps}")
 
 # Schedules (all based on progress = training_time / TIME_BUDGET)
 
@@ -569,31 +543,14 @@ total_training_time = 0
 step = 0
 
 while True:
-    if step == 0:
-        log("[trace] entering training loop")
-        log("[trace] before initial device_synchronize")
     device_synchronize()
-    if step == 0:
-        log("[trace] after initial device_synchronize")
     t0 = time.time()
     for micro_step in range(grad_accum_steps):
-        if step == 0 and micro_step == 0:
-            log("[trace] micro_step=0 before forward")
-        with autocast_ctx:
-            loss = model(x, y)
-        if step == 0 and micro_step == 0:
-            log("[trace] micro_step=0 after forward")
+        loss = model(x, y)
         train_loss = loss.detach()
         loss = loss / grad_accum_steps
-        if step == 0 and micro_step == 0:
-            log("[trace] micro_step=0 before backward")
         loss.backward()
-        if step == 0 and micro_step == 0:
-            log("[trace] micro_step=0 after backward")
-            log("[trace] micro_step=0 before next(train_loader)")
         x, y, epoch = next(train_loader)
-        if step == 0 and micro_step == 0:
-            log("[trace] micro_step=0 after next(train_loader)")
 
     # Progress and schedules
     progress = min(total_training_time / TIME_BUDGET, 1.0)
@@ -605,11 +562,7 @@ while True:
         if group['kind'] == 'muon':
             group["momentum"] = muon_momentum
             group["weight_decay"] = muon_weight_decay
-    if step == 0:
-        log("[trace] before optimizer.step")
     optimizer.step()
-    if step == 0:
-        log("[trace] after optimizer.step")
     model.zero_grad(set_to_none=True)
 
     train_loss_f = train_loss.item()
@@ -619,11 +572,7 @@ while True:
         print("FAIL")
         exit(1)
 
-    if step == 0:
-        log("[trace] before post-step device_synchronize")
     device_synchronize()
-    if step == 0:
-        log("[trace] after post-step device_synchronize")
     t1 = time.time()
     dt = t1 - t0
 
@@ -661,19 +610,13 @@ total_tokens = step * TOTAL_BATCH_SIZE
 
 # Final eval
 model.eval()
-with autocast_ctx:
-    val_bpb = evaluate_bpb(model, tokenizer, DEVICE_BATCH_SIZE)
+val_bpb = evaluate_bpb(model, tokenizer, DEVICE_BATCH_SIZE)
 
 # Final summary
 t_end = time.time()
 startup_time = t_start_training - t_start
 steady_state_mfu = 100 * num_flops_per_token * TOTAL_BATCH_SIZE * (step - 10) / total_training_time / H100_BF16_PEAK_FLOPS if total_training_time > 0 else 0
-if device.type == "cuda":
-    peak_vram_mb = torch.cuda.max_memory_allocated() / 1024 / 1024
-elif device.type == "mps":
-    peak_vram_mb = torch.mps.current_allocated_memory() / 1024 / 1024
-else:
-    peak_vram_mb = 0.0
+peak_vram_mb = torch.mps.current_allocated_memory() / 1024 / 1024
 
 print("---")
 print(f"val_bpb:          {val_bpb:.6f}")

@@ -23,13 +23,8 @@ import rustbpe
 import tiktoken
 import torch
 
-# Prefer Apple Silicon GPU, else CUDA GPU, else CPU.
-if torch.backends.mps.is_available():
-    DEFAULT_DEVICE = "mps"
-elif torch.cuda.is_available():
-    DEFAULT_DEVICE = "cuda"
-else:
-    DEFAULT_DEVICE = "cpu"
+# Apple Silicon only runtime target.
+DEFAULT_DEVICE = "mps"
 
 # ---------------------------------------------------------------------------
 # Constants (fixed, do not modify)
@@ -51,6 +46,8 @@ MAX_SHARD = 6542 # the last datashard is shard_06542.parquet
 VAL_SHARD = MAX_SHARD  # pinned validation shard (shard_06542)
 VAL_FILENAME = f"shard_{VAL_SHARD:05d}.parquet"
 VOCAB_SIZE = 8192
+PIN_MEMORY = False
+NUM_WORKERS = 0  # This loader is single-threaded by design.
 
 # BPE split pattern (GPT-4 style, with \p{N}{1,2} instead of {1,3})
 SPLIT_PATTERN = r"""'(?i:[sdmt]|ll|ve|re)|[^\r\n\p{L}\p{N}]?+\p{L}+|\p{N}{1,2}| ?[^\s\p{L}\p{N}]++[\r\n]*|\s*[\r\n]|\s+(?!\S)|\s+"""
@@ -303,8 +300,7 @@ def make_dataloader(tokenizer, B, T, split, buffer_size=1000):
 
     # Pre-allocate buffers: [inputs (B*T) | targets (B*T)]
     row_buffer = torch.empty((B, row_capacity), dtype=torch.long)
-    use_pinned_memory = DEFAULT_DEVICE == "cuda"
-    cpu_buffer = torch.empty(2 * B * T, dtype=torch.long, pin_memory=use_pinned_memory)
+    cpu_buffer = torch.empty(2 * B * T, dtype=torch.long, pin_memory=PIN_MEMORY)
     gpu_buffer = torch.empty(2 * B * T, dtype=torch.long, device=DEFAULT_DEVICE)
     cpu_inputs = cpu_buffer[:B * T].view(B, T)
     cpu_targets = cpu_buffer[B * T:].view(B, T)
@@ -342,7 +338,6 @@ def make_dataloader(tokenizer, B, T, split, buffer_size=1000):
 
         cpu_inputs.copy_(row_buffer[:, :-1])
         cpu_targets.copy_(row_buffer[:, 1:])
-        # Non-blocking pinned-memory copies are CUDA-specific; keep MPS/CPU synchronous.
         gpu_buffer.copy_(cpu_buffer)
         yield inputs, targets, epoch
 
