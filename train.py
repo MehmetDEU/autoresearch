@@ -7,6 +7,7 @@ Usage: uv run train.py
 import os
 os.environ["PYTORCH_ALLOC_CONF"] = "expandable_segments:True"
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
+os.environ.setdefault("PYTHONUNBUFFERED", "1")
 
 import gc
 import math
@@ -19,6 +20,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from prepare import MAX_SEQ_LEN, TIME_BUDGET, Tokenizer, make_dataloader, evaluate_bpb
+
+
+def log(msg):
+    print(msg, flush=True)
 
 # ---------------------------------------------------------------------------
 # GPT Model
@@ -451,13 +456,14 @@ FINAL_LR_FRAC = 0.0     # final LR as fraction of initial
 
 # Model size
 DEPTH = 8               # number of transformer layers
-DEVICE_BATCH_SIZE = 256  # per-device batch size (reduce if OOM)
+DEVICE_BATCH_SIZE = 16  # per-device batch size (reduce if OOM)
 
 # ---------------------------------------------------------------------------
 # Setup: tokenizer, model, optimizer, dataloader
 # ---------------------------------------------------------------------------
 
 t_start = time.time()
+log("[startup] initializing runtime")
 torch.manual_seed(42)
 if torch.cuda.is_available():
     torch.cuda.manual_seed(42)
@@ -478,8 +484,9 @@ def device_synchronize():
         torch.mps.synchronize()
 
 tokenizer = Tokenizer.from_directory()
+log("[startup] tokenizer loaded")
 vocab_size = tokenizer.get_vocab_size()
-print(f"Vocab size: {vocab_size:,}")
+log(f"Vocab size: {vocab_size:,}")
 
 def build_model_config(depth):
     base_dim = depth * ASPECT_RATIO
@@ -492,20 +499,21 @@ def build_model_config(depth):
     )
 
 config = build_model_config(DEPTH)
-print(f"Model config: {asdict(config)}")
+log(f"Model config: {asdict(config)}")
 
 with torch.device("meta"):
     model = GPT(config)
 model.to_empty(device=device)
 model.init_weights()
+log("[startup] model allocated and initialized")
 
 param_counts = model.num_scaling_params()
-print("Parameter counts:")
+log("Parameter counts:")
 for key, value in param_counts.items():
-    print(f"  {key:24s}: {value:,}")
+    log(f"  {key:24s}: {value:,}")
 num_params = param_counts['total']
 num_flops_per_token = model.estimate_flops()
-print(f"Estimated FLOPs per token: {num_flops_per_token:e}")
+log(f"Estimated FLOPs per token: {num_flops_per_token:e}")
 
 if device.type == "mps":
     DEVICE_BATCH_SIZE = min(DEVICE_BATCH_SIZE, 16)
@@ -528,9 +536,10 @@ if device.type == "cuda":
 
 train_loader = make_dataloader(tokenizer, DEVICE_BATCH_SIZE, MAX_SEQ_LEN, "train")
 x, y, epoch = next(train_loader)  # prefetch first batch
+log("[startup] first batch prefetched")
 
-print(f"Time budget: {TIME_BUDGET}s")
-print(f"Gradient accumulation steps: {grad_accum_steps}")
+log(f"Time budget: {TIME_BUDGET}s")
+log(f"Gradient accumulation steps: {grad_accum_steps}")
 
 # Schedules (all based on progress = training_time / TIME_BUDGET)
 
@@ -560,15 +569,31 @@ total_training_time = 0
 step = 0
 
 while True:
+    if step == 0:
+        log("[trace] entering training loop")
+        log("[trace] before initial device_synchronize")
     device_synchronize()
+    if step == 0:
+        log("[trace] after initial device_synchronize")
     t0 = time.time()
     for micro_step in range(grad_accum_steps):
+        if step == 0 and micro_step == 0:
+            log("[trace] micro_step=0 before forward")
         with autocast_ctx:
             loss = model(x, y)
+        if step == 0 and micro_step == 0:
+            log("[trace] micro_step=0 after forward")
         train_loss = loss.detach()
         loss = loss / grad_accum_steps
+        if step == 0 and micro_step == 0:
+            log("[trace] micro_step=0 before backward")
         loss.backward()
+        if step == 0 and micro_step == 0:
+            log("[trace] micro_step=0 after backward")
+            log("[trace] micro_step=0 before next(train_loader)")
         x, y, epoch = next(train_loader)
+        if step == 0 and micro_step == 0:
+            log("[trace] micro_step=0 after next(train_loader)")
 
     # Progress and schedules
     progress = min(total_training_time / TIME_BUDGET, 1.0)
@@ -580,7 +605,11 @@ while True:
         if group['kind'] == 'muon':
             group["momentum"] = muon_momentum
             group["weight_decay"] = muon_weight_decay
+    if step == 0:
+        log("[trace] before optimizer.step")
     optimizer.step()
+    if step == 0:
+        log("[trace] after optimizer.step")
     model.zero_grad(set_to_none=True)
 
     train_loss_f = train_loss.item()
@@ -590,7 +619,11 @@ while True:
         print("FAIL")
         exit(1)
 
+    if step == 0:
+        log("[trace] before post-step device_synchronize")
     device_synchronize()
+    if step == 0:
+        log("[trace] after post-step device_synchronize")
     t1 = time.time()
     dt = t1 - t0
 

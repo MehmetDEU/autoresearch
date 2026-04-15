@@ -23,8 +23,13 @@ import rustbpe
 import tiktoken
 import torch
 
-# Prefer Apple Silicon GPU on Mac, otherwise fall back to CPU.
-DEFAULT_DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
+# Prefer Apple Silicon GPU, else CUDA GPU, else CPU.
+if torch.backends.mps.is_available():
+    DEFAULT_DEVICE = "mps"
+elif torch.cuda.is_available():
+    DEFAULT_DEVICE = "cuda"
+else:
+    DEFAULT_DEVICE = "cpu"
 
 # ---------------------------------------------------------------------------
 # Constants (fixed, do not modify)
@@ -298,7 +303,8 @@ def make_dataloader(tokenizer, B, T, split, buffer_size=1000):
 
     # Pre-allocate buffers: [inputs (B*T) | targets (B*T)]
     row_buffer = torch.empty((B, row_capacity), dtype=torch.long)
-    cpu_buffer = torch.empty(2 * B * T, dtype=torch.long, pin_memory=True)
+    use_pinned_memory = DEFAULT_DEVICE == "cuda"
+    cpu_buffer = torch.empty(2 * B * T, dtype=torch.long, pin_memory=use_pinned_memory)
     gpu_buffer = torch.empty(2 * B * T, dtype=torch.long, device=DEFAULT_DEVICE)
     cpu_inputs = cpu_buffer[:B * T].view(B, T)
     cpu_targets = cpu_buffer[B * T:].view(B, T)
@@ -336,7 +342,8 @@ def make_dataloader(tokenizer, B, T, split, buffer_size=1000):
 
         cpu_inputs.copy_(row_buffer[:, :-1])
         cpu_targets.copy_(row_buffer[:, 1:])
-        gpu_buffer.copy_(cpu_buffer, non_blocking=True)
+        # Non-blocking pinned-memory copies are CUDA-specific; keep MPS/CPU synchronous.
+        gpu_buffer.copy_(cpu_buffer, non_blocking=use_pinned_memory)
         yield inputs, targets, epoch
 
 # ---------------------------------------------------------------------------
