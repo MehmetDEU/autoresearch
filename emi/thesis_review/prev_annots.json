@@ -1,0 +1,802 @@
+[
+  {
+    "page": 6,
+    "type": "Highlight",
+    "rect": [
+      228.56700134277344,
+      570.324951171875,
+      510.3909912109375,
+      582.0549926757812
+    ],
+    "title": "Mehmet Altay",
+    "content": "I always emphasise that a thesis should never be called as a \"study\" only. Rather, adopt \"research\".",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527163007+03'00'",
+    "modDate": "D:20260527163038+03'00'"
+  },
+  {
+    "page": 7,
+    "type": "Highlight",
+    "rect": [
+      113.08499908447266,
+      108.44097900390625,
+      524.97900390625,
+      244.0269775390625
+    ],
+    "title": "Mehmet Altay",
+    "content": "Why bold?",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527163056+03'00'",
+    "modDate": "D:20260527163104+03'00'"
+  },
+  {
+    "page": 10,
+    "type": "Highlight",
+    "rect": [
+      141.39500427246094,
+      248.55499267578125,
+      524.4420166015625,
+      300.635009765625
+    ],
+    "title": "Mehmet Altay",
+    "content": "Inconsistent stylistic use; either font type, size or so.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527163121+03'00'",
+    "modDate": "D:20260527163141+03'00'"
+  },
+  {
+    "page": 12,
+    "type": "Highlight",
+    "rect": [
+      113.0790023803711,
+      87.80096435546875,
+      524.4730224609375,
+      185.35296630859375
+    ],
+    "title": "Mehmet Altay",
+    "content": "Is this section really required somewhere? The following title and its subtitles are also introduction, which causes ambiguity.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527163208+03'00'",
+    "modDate": "D:20260527163238+03'00'"
+  },
+  {
+    "page": 12,
+    "type": "Highlight",
+    "rect": [
+      113.0790023803711,
+      380.79296875,
+      524.8410034179688,
+      413.1429748535156
+    ],
+    "title": "Mehmet Altay",
+    "content": "Where is the rest.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527163247+03'00'",
+    "modDate": "D:20260527163252+03'00'"
+  },
+  {
+    "page": 12,
+    "type": "Text",
+    "rect": [
+      406.32000732421875,
+      73.0,
+      422.32000732421875,
+      89.0
+    ],
+    "title": "Mehmet Altay",
+    "content": "I recommend using a single introduction architecture: keep either the preliminary 'INTRODUCTION' or the Chapter 1 introduction heading, not both.",
+    "subject": "Supervisor Note",
+    "name": "Note",
+    "creationDate": "",
+    "modDate": ""
+  },
+  {
+    "page": 12,
+    "type": "Text",
+    "rect": [
+      406.32000732421875,
+      127.0,
+      422.32000732421875,
+      143.0
+    ],
+    "title": "Mehmet Altay",
+    "content": "I see truncated text in this section ('textbo...'); please verify the source file and re-export the PDF before submission.",
+    "subject": "Supervisor Note",
+    "name": "Note",
+    "creationDate": "",
+    "modDate": ""
+  },
+  {
+    "page": 13,
+    "type": "Highlight",
+    "rect": [
+      256.65899658203125,
+      231.9630126953125,
+      357.52899169921875,
+      243.552978515625
+    ],
+    "title": "Mehmet Altay",
+    "content": "You know systematic review is a type of research method, like descriptive research, experimental research etc. It does not simply refer to the review of literature in a planned or organised manner.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527163345+03'00'",
+    "modDate": "D:20260527163439+03'00'"
+  },
+  {
+    "page": 13,
+    "type": "Highlight",
+    "rect": [
+      372.20098876953125,
+      314.6729736328125,
+      387.5469970703125,
+      326.26300048828125
+    ],
+    "title": "Mehmet Altay",
+    "content": "Following a colon without capitalisation is an indicator of the use of AI nowadays. I hope you did not make AI write your thesis.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527163514+03'00'",
+    "modDate": "D:20260527163607+03'00'"
+  },
+  {
+    "page": 13,
+    "type": "Highlight",
+    "rect": [
+      494.5950012207031,
+      397.4729919433594,
+      524.6409912109375,
+      409.06298828125
+    ],
+    "title": "Mehmet Altay",
+    "content": "Check your thesis thoroughly against its use.",
+    "subject": "Vurgu",
+    "name": "",
+    "creationDate": "D:20260527163714+03'00'",
+    "modDate": "D:20260527163729+03'00'"
+  },
+  {
+    "page": 13,
+    "type": "Highlight",
+    "rect": [
+      113.0790023803711,
+      583.85302734375,
+      524.593017578125,
+      636.8729858398438
+    ],
+    "title": "Mehmet Altay",
+    "content": "You use present perfect simple, but your references consist of only those from 90s and early 2000s. To say that it \"has become\" so, why isn't there any contemporary study to refer to? This criticism is also valid for the rest of your literature review; referring not only to earlier studies, but (more importantly) to the contemporary ones, often within the last decade.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527163857+03'00'",
+    "modDate": "D:20260527164134+03'00'"
+  },
+  {
+    "page": 13,
+    "type": "Highlight",
+    "rect": [
+      321.98699951171875,
+      666.6829833984375,
+      349.3330078125,
+      678.27294921875
+    ],
+    "title": "Mehmet Altay",
+    "content": "",
+    "subject": "Vurgu",
+    "name": "",
+    "creationDate": "D:20260527164207+03'00'",
+    "modDate": "D:20260527164207+03'00'"
+  },
+  {
+    "page": 13,
+    "type": "Highlight",
+    "rect": [
+      282.4469909667969,
+      687.322998046875,
+      430.82501220703125,
+      698.9129638671875
+    ],
+    "title": "Mehmet Altay",
+    "content": "Like here, you say \"today\" but it is not today.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527164211+03'00'",
+    "modDate": "D:20260527164224+03'00'"
+  },
+  {
+    "page": 13,
+    "type": "Highlight",
+    "rect": [
+      113.0790023803711,
+      728.7229614257812,
+      524.448974609375,
+      761.0686645507812
+    ],
+    "title": "Mehmet Altay",
+    "content": "Investigate the literature and see whether they still insist on using inner, outer and/or expanding circle. This taxonomy is regarded as somewhat out-of-date now.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527164243+03'00'",
+    "modDate": "D:20260527164326+03'00'"
+  },
+  {
+    "page": 13,
+    "type": "Text",
+    "rect": [
+      406.32000732421875,
+      73.0,
+      422.32000732421875,
+      89.0
+    ],
+    "title": "Mehmet Altay",
+    "content": "If you did not follow a formal review protocol (search strings, screening, appraisal), do not label this as a systematic review.",
+    "subject": "Supervisor Note",
+    "name": "Note",
+    "creationDate": "",
+    "modDate": ""
+  },
+  {
+    "page": 13,
+    "type": "Text",
+    "rect": [
+      406.32000732421875,
+      127.0,
+      422.32000732421875,
+      143.0
+    ],
+    "title": "Mehmet Altay",
+    "content": "Please update the framing with recent ELF textbook studies (especially 2018-2025) and justify whether the Kachru-circle model is retained, revised, or replaced.",
+    "subject": "Supervisor Note",
+    "name": "Note",
+    "creationDate": "",
+    "modDate": ""
+  },
+  {
+    "page": 14,
+    "type": "Highlight",
+    "rect": [
+      131.07899475097656,
+      480.8929748535156,
+      178.7050018310547,
+      492.48297119140625
+    ],
+    "title": "Mehmet Altay",
+    "content": "I also doubt whether the space length of your indents are standardised and as required (e.g. 1.25 cm or so).",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527164544+03'00'",
+    "modDate": "D:20260527164626+03'00'"
+  },
+  {
+    "page": 15,
+    "type": "Highlight",
+    "rect": [
+      113.0790023803711,
+      211.802978515625,
+      524.6279907226562,
+      264.822998046875
+    ],
+    "title": "Mehmet Altay",
+    "content": "Which studies, for example? I cannot see any cited here.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527165115+03'00'",
+    "modDate": "D:20260527165148+03'00'"
+  },
+  {
+    "page": 15,
+    "type": "Highlight",
+    "rect": [
+      113.0790023803711,
+      273.87298583984375,
+      481.614990234375,
+      285.4630126953125
+    ],
+    "title": "Mehmet Altay",
+    "content": "How sure are you? Some studies may not explicitly say that they concern ELF awareness, but they still have some points in reserching ELF and indirectly deal with it. After a simple googling, I can find at least this one: https://journal.mas.edu.sy/mas/article/view/MASV02E01D02202620\n\nNever employ a too decisive and too certain language. Be neutral. You can say, for example, \"to the best of the author's knowledge, there are very few (if any) research on investigating students' ELF awareness in Syria.\"",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527165510+03'00'",
+    "modDate": "D:20260527165750+03'00'"
+  },
+  {
+    "page": 15,
+    "type": "Highlight",
+    "rect": [
+      113.10600280761719,
+      372.0059814453125,
+      524.5869750976562,
+      401.74798583984375
+    ],
+    "title": "Mehmet Altay",
+    "content": "Why these citations? Do these authors also say there is such a need?",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527165833+03'00'",
+    "modDate": "D:20260527165848+03'00'"
+  },
+  {
+    "page": 15,
+    "type": "Highlight",
+    "rect": [
+      207.4709930419922,
+      608.572998046875,
+      290.125,
+      620.1629638671875
+    ],
+    "title": "Mehmet Altay",
+    "content": "Galloway has a more recent study on this and such claims. See her paper with Ruegg in 2025. I was its journal referee.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527170018+03'00'",
+    "modDate": "D:20260527170058+03'00'"
+  },
+  {
+    "page": 15,
+    "type": "Caret",
+    "rect": [
+      233.35899353027344,
+      758.1763916015625,
+      241.84300231933594,
+      765.0885009765625
+    ],
+    "title": "Mehmet Altay",
+    "content": "Do we use \"that\" prior to direct speech?",
+    "subject": "Eklenmiş Metin",
+    "name": "",
+    "creationDate": "D:20260527170132+03'00'",
+    "modDate": "D:20260527170147+03'00'"
+  },
+  {
+    "page": 15,
+    "type": "Text",
+    "rect": [
+      406.32000732421875,
+      73.0,
+      422.32000732421875,
+      89.0
+    ],
+    "title": "Mehmet Altay",
+    "content": "I suggest calibrating novelty claims more cautiously and documenting your search strategy (databases, strings, and year limits) in the method section.",
+    "subject": "Supervisor Note",
+    "name": "Note",
+    "creationDate": "",
+    "modDate": ""
+  },
+  {
+    "page": 15,
+    "type": "Text",
+    "rect": [
+      406.32000732421875,
+      127.0,
+      422.32000732421875,
+      143.0
+    ],
+    "title": "Mehmet Altay",
+    "content": "Broaden the citation base beyond the same core sources; include contradictory findings and regional studies relevant to the Syrian context.",
+    "subject": "Supervisor Note",
+    "name": "Note",
+    "creationDate": "",
+    "modDate": ""
+  },
+  {
+    "page": 16,
+    "type": "Highlight",
+    "rect": [
+      113.0790023803711,
+      108.24298095703125,
+      221.1009979248047,
+      119.8330078125
+    ],
+    "title": "Mehmet Altay",
+    "content": "Always citing the very same studies. Why aren't there any other?",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527170223+03'00'",
+    "modDate": "D:20260527170244+03'00'"
+  },
+  {
+    "page": 36,
+    "type": "Highlight",
+    "rect": [
+      113.0790023803711,
+      468.1729736328125,
+      524.5919799804688,
+      500.4029846191406
+    ],
+    "title": "Mehmet Altay",
+    "content": "But I have found some.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527170842+03'00'",
+    "modDate": "D:20260527170853+03'00'"
+  },
+  {
+    "page": 37,
+    "type": "Highlight",
+    "rect": [
+      425.968994140625,
+      646.52294921875,
+      438.6510009765625,
+      658.1129760742188
+    ],
+    "title": "Mehmet Altay",
+    "content": "Em dash is also another well-known indicator of using AI.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527170924+03'00'",
+    "modDate": "D:20260527170938+03'00'"
+  },
+  {
+    "page": 37,
+    "type": "Text",
+    "rect": [
+      406.32000732421875,
+      73.0,
+      422.32000732421875,
+      89.0
+    ],
+    "title": "Mehmet Altay",
+    "content": "Please proofread punctuation and sentence rhythm for consistent academic prose throughout the chapter.",
+    "subject": "Supervisor Note",
+    "name": "Note",
+    "creationDate": "",
+    "modDate": ""
+  },
+  {
+    "page": 44,
+    "type": "Highlight",
+    "rect": [
+      118.48500061035156,
+      196.0830078125,
+      561.5969848632812,
+      440.38299560546875
+    ],
+    "title": "Mehmet Altay",
+    "content": "Out of page layout and borders.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527171120+03'00'",
+    "modDate": "D:20260527171131+03'00'"
+  },
+  {
+    "page": 45,
+    "type": "Highlight",
+    "rect": [
+      160.23899841308594,
+      346.4609680175781,
+      360.4330139160156,
+      358.06298828125
+    ],
+    "title": "Mehmet Altay",
+    "content": "Where did you acquire this figure from? What resource, or using what tool?",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527171142+03'00'",
+    "modDate": "D:20260527171219+03'00'"
+  },
+  {
+    "page": 45,
+    "type": "Highlight",
+    "rect": [
+      438.83599853515625,
+      296.71600341796875,
+      491.5169982910156,
+      318.7779541015625
+    ],
+    "title": "Mehmet Altay",
+    "content": "Watch out such spacing issues.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527171225+03'00'",
+    "modDate": "D:20260527171242+03'00'"
+  },
+  {
+    "page": 45,
+    "type": "Text",
+    "rect": [
+      406.32000732421875,
+      73.0,
+      422.32000732421875,
+      89.0
+    ],
+    "title": "Mehmet Altay",
+    "content": "I need a clear figure audit trail: state the source, software/tools used, derivation steps, and whether this figure is author-generated.",
+    "subject": "Supervisor Note",
+    "name": "Note",
+    "creationDate": "",
+    "modDate": ""
+  },
+  {
+    "page": 46,
+    "type": "Highlight",
+    "rect": [
+      249.44700622558594,
+      376.8329772949219,
+      302.89300537109375,
+      388.4229736328125
+    ],
+    "title": "Mehmet Altay",
+    "content": "Again, capitalisation.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527171342+03'00'",
+    "modDate": "D:20260527171351+03'00'"
+  },
+  {
+    "page": 46,
+    "type": "Highlight",
+    "rect": [
+      432.8320007324219,
+      563.093017578125,
+      486.8659973144531,
+      574.6829833984375
+    ],
+    "title": "Mehmet Altay",
+    "content": "What does a row refer to in here?",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527171510+03'00'",
+    "modDate": "D:20260527171519+03'00'"
+  },
+  {
+    "page": 46,
+    "type": "Text",
+    "rect": [
+      406.32000732421875,
+      73.0,
+      422.32000732421875,
+      89.0
+    ],
+    "title": "Mehmet Altay",
+    "content": "Define the unit of analysis operationally (what each row/data point represents) and provide one concrete coding example for each research question.",
+    "subject": "Supervisor Note",
+    "name": "Note",
+    "creationDate": "",
+    "modDate": ""
+  },
+  {
+    "page": 50,
+    "type": "Highlight",
+    "rect": [
+      435.0889892578125,
+      356.6729736328125,
+      447.77099609375,
+      368.2629699707031
+    ],
+    "title": "Mehmet Altay",
+    "content": "",
+    "subject": "Vurgu",
+    "name": "",
+    "creationDate": "D:20260527171703+03'00'",
+    "modDate": "D:20260527171703+03'00'"
+  },
+  {
+    "page": 50,
+    "type": "Highlight",
+    "rect": [
+      141.40499877929688,
+      129.20098876953125,
+      208.84300231933594,
+      140.58697509765625
+    ],
+    "title": "Mehmet Altay",
+    "content": "Overall, I do not think that the data collected and their analyses are sufficient enough for a thesis.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527171959+03'00'",
+    "modDate": "D:20260527172033+03'00'"
+  },
+  {
+    "page": 50,
+    "type": "Text",
+    "rect": [
+      406.32000732421875,
+      73.0,
+      422.32000732421875,
+      89.0
+    ],
+    "title": "Mehmet Altay",
+    "content": "This results section is too table-heavy; add representative textbook excerpts/screenshots for major claims so interpretations are verifiable.",
+    "subject": "Supervisor Note",
+    "name": "Note",
+    "creationDate": "",
+    "modDate": ""
+  },
+  {
+    "page": 51,
+    "type": "Highlight",
+    "rect": [
+      132.75900268554688,
+      526.7329711914062,
+      186.26499938964844,
+      559.0830078125
+    ],
+    "title": "Mehmet Altay",
+    "content": "",
+    "subject": "Vurgu",
+    "name": "",
+    "creationDate": "D:20260527171740+03'00'",
+    "modDate": "D:20260527171740+03'00'"
+  },
+  {
+    "page": 51,
+    "type": "Highlight",
+    "rect": [
+      132.75900268554688,
+      288.63299560546875,
+      516.1290283203125,
+      559.0830078125
+    ],
+    "title": "Mehmet Altay",
+    "content": "Table content is not distributed in a reader-friendly manner.",
+    "subject": "Vurgu",
+    "name": "",
+    "creationDate": "D:20260527171751+03'00'",
+    "modDate": "D:20260527171809+03'00'"
+  },
+  {
+    "page": 52,
+    "type": "Highlight",
+    "rect": [
+      113.0790023803711,
+      439.9609680175781,
+      217.5850067138672,
+      451.56298828125
+    ],
+    "title": "Mehmet Altay",
+    "content": "Why do some tables have lines while the others don't have. Be consistent. I would rather not to have lines other than the upper and lower lines and also the lower lines following titles.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527171822+03'00'",
+    "modDate": "D:20260527171910+03'00'"
+  },
+  {
+    "page": 52,
+    "type": "Text",
+    "rect": [
+      113.0790023803711,
+      439.9609680175781,
+      137.07901000976562,
+      463.9609680175781
+    ],
+    "title": "Mehmet Altay",
+    "content": "You would provide more samples, examples, and comparisons, illustrating each and every dimension, strategy code etc. You mostly shared statistical (descriptive data) but mostly without concrete evidence. These findings can only be satisfactory for a term assignment. Further elaboration is required.",
+    "subject": "Yapışkan Not",
+    "name": "Comment",
+    "creationDate": "D:20260527172216+03'00'",
+    "modDate": "D:20260527172306+03'00'"
+  },
+  {
+    "page": 52,
+    "type": "Text",
+    "rect": [
+      406.32000732421875,
+      73.0,
+      422.32000732421875,
+      89.0
+    ],
+    "title": "Mehmet Altay",
+    "content": "Please standardize all tables (borders, spacing, captions, and decimals) according to one institutional style template.",
+    "subject": "Supervisor Note",
+    "name": "Note",
+    "creationDate": "",
+    "modDate": ""
+  },
+  {
+    "page": 52,
+    "type": "Text",
+    "rect": [
+      406.32000732421875,
+      127.0,
+      422.32000732421875,
+      143.0
+    ],
+    "title": "Mehmet Altay",
+    "content": "There is a terminology inconsistency between Chapter IV and the Appendix for strategy codes (e.g., S8/S9); reconcile the taxonomy and use one label set.",
+    "subject": "Supervisor Note",
+    "name": "Note",
+    "creationDate": "",
+    "modDate": ""
+  },
+  {
+    "page": 58,
+    "type": "Highlight",
+    "rect": [
+      143.0850067138672,
+      253.43096923828125,
+      237.4149932861328,
+      264.81695556640625
+    ],
+    "title": "Mehmet Altay",
+    "content": "I know those communications strategies but you should justify why specifically you used this inventory but not the others.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527172336+03'00'",
+    "modDate": "D:20260527172418+03'00'"
+  },
+  {
+    "page": 58,
+    "type": "Text",
+    "rect": [
+      406.32000732421875,
+      73.0,
+      422.32000732421875,
+      89.0
+    ],
+    "title": "Mehmet Altay",
+    "content": "I need a clearer framework justification: explain why you selected the Vettorel and Yagar inventory over alternatives (e.g., Dörnyei; Faerch & Kasper) using explicit selection criteria.",
+    "subject": "Supervisor Note",
+    "name": "Note",
+    "creationDate": "",
+    "modDate": ""
+  },
+  {
+    "page": 60,
+    "type": "Highlight",
+    "rect": [
+      153.40499877929688,
+      129.20098876953125,
+      340.8009948730469,
+      140.58697509765625
+    ],
+    "title": "Mehmet Altay",
+    "content": "The discussion and conclusion sections are limited owing to/in line with the demarcations of the results/findings section. If you had more and better elaboration in the results/findings, you could have even more food for thought in the discussion and conclusion.",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527172507+03'00'",
+    "modDate": "D:20260527172601+03'00'"
+  },
+  {
+    "page": 60,
+    "type": "Text",
+    "rect": [
+      406.32000732421875,
+      73.0,
+      422.32000732421875,
+      89.0
+    ],
+    "title": "Mehmet Altay",
+    "content": "Deepen the discussion through a claim-evidence-interpretation pattern; each interpretive claim should be traced to specific results/tables.",
+    "subject": "Supervisor Note",
+    "name": "Note",
+    "creationDate": "",
+    "modDate": ""
+  },
+  {
+    "page": 71,
+    "type": "Highlight",
+    "rect": [
+      162.40499877929688,
+      418.43096923828125,
+      347.5169982910156,
+      429.8169860839844
+    ],
+    "title": "Mehmet Altay",
+    "content": "I could not get enough of pedagogical implications; e.g., What specific contribution does your research provide the literature, what is new? What makes it different from already existing literature?",
+    "subject": "Metinle İlgili Yorum Yap",
+    "name": "",
+    "creationDate": "D:20260527172808+03'00'",
+    "modDate": "D:20260527172909+03'00'"
+  },
+  {
+    "page": 71,
+    "type": "Text",
+    "rect": [
+      406.32000732421875,
+      73.0,
+      422.32000732421875,
+      89.0
+    ],
+    "title": "Mehmet Altay",
+    "content": "Please state the original contribution explicitly in three parts: empirical, methodological, and contextual (including the Syria-Turkiye scope).",
+    "subject": "Supervisor Note",
+    "name": "Note",
+    "creationDate": "",
+    "modDate": ""
+  }
+]
