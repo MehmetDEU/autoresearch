@@ -1,0 +1,13 @@
+Lecturer_ID,Major,n_students,Mean_Underrating_Gap,Mean_TL_percent,Mean_EAP_limitation,Mean_Decline_Overall
+L01,Mechanical Engineering,10,6.54,40.9,3.42,1.71
+L02,Mechanical Engineering,10,6.98,45.0,4.16,0.08
+L03,Mechanical Engineering,10,3.94,29.9,3.46,-4.89
+L04,Mechanical Engineering,10,12.91,53.7,4.1,5.08
+L05,Chemical Engineering,10,5.16,36.2,3.08,-0.58
+L06,Chemical Engineering,10,10.85,36.0,2.14,0.41
+L07,Chemical Engineering,10,7.97,32.7,2.16,1.58
+L08,Chemical Engineering,10,11.11,47.6,3.16,1.0
+L09,Electrical-Electronics Engineering,10,14.2,41.6,2.96,4.3
+L10,Electrical-Electronics Engineering,10,5.32,33.0,2.9,-1.69
+L11,Electrical-Electronics Engineering,10,9.5,29.6,2.6,2.32
+L12,Electrical-Electronics Engineering,10,6.84,35.0,3.5,0.9
