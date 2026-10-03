@@ -158,14 +158,15 @@ def kpi(ax, value: str, label: str, color: str) -> None:
 def make_tableau_dashboard(s: pd.DataFrame, lect: pd.DataFrame) -> Path:
     TAB.mkdir(parents=True, exist_ok=True)
     pre, post = s["Pre_Overall"], s["Post_Overall"]
-    ttest = stats.ttest_rel(pre, post)
-    d = (pre - post).mean() / (pre - post).std(ddof=1)
-    r_u = stats.pearsonr(s["Underrating_Gap"], s["Decline_Overall"])
-    r_t = stats.pearsonr(s["TL_percent"], s["Decline_Overall"])
+    speak_pre, speak_post = s["Pre_Speaking"], s["Post_Speaking"]
+    t_speak = stats.ttest_rel(speak_pre, speak_post)
+    d_speak = (speak_pre - speak_post).mean() / (speak_pre - speak_post).std(ddof=1)
+    r_u = stats.pearsonr(s["Underrating_Gap"], s["Decline_Speaking"])
+    r_t = stats.pearsonr(s["TL_percent"], s["Decline_Speaking"])
 
     fig = plt.figure(figsize=(14.5, 9.2), facecolor=T["bg"])
     fig.suptitle(
-        "EMI proficiency panel  ·  Tableau-style overview  ·  SYNTHETIC N = 120",
+        "EMI proficiency panel  ·  Speaking-led attrition  ·  SYNTHETIC N = 120",
         fontsize=15,
         fontweight="bold",
         color=T["header"],
@@ -176,7 +177,7 @@ def make_tableau_dashboard(s: pd.DataFrame, lect: pd.DataFrame) -> Path:
     fig.text(
         0.01,
         0.945,
-        "Paired PYP-exit vs graduation scores  |  Faculty of Engineering  |  Institutional IELTS-aligned test (B1 threshold = 60)",
+        "Paired PYP-exit vs graduation  |  Speaking is the radical drop; Reading/Writing stable or slightly up  |  B1 threshold = 60",
         fontsize=9,
         color=T["muted"],
     )
@@ -196,13 +197,13 @@ def make_tableau_dashboard(s: pd.DataFrame, lect: pd.DataFrame) -> Path:
 
     # KPI row
     ax0 = fig.add_subplot(gs[0, 0])
-    kpi(ax0, f"{pre.mean():.1f}", "Pretest mean (PYP exit)", T["blue"])
+    kpi(ax0, f"{(speak_pre - speak_post).mean():.1f}", "Speaking mean decline (points)", T["red"])
     ax1 = fig.add_subplot(gs[0, 1])
-    kpi(ax1, f"{post.mean():.1f}", "Posttest mean (graduation)", T["orange"])
+    kpi(ax1, f"p < .001" if t_speak.pvalue < 0.001 else f"p = {t_speak.pvalue:.3f}", f"Speaking paired t  ·  d_z = {d_speak:.2f}", T["orange"])
     ax2 = fig.add_subplot(gs[0, 2])
-    kpi(ax2, f"p = {ttest.pvalue:.3f}", f"Paired t(119) = {ttest.statistic:.2f}   d_z = {d:.2f}", T["red"])
+    kpi(ax2, f"{s['Decline_Listening'].mean():.1f}", "Listening mean decline", T["blue"])
     ax3 = fig.add_subplot(gs[0, 3])
-    kpi(ax3, f"r = {r_u.statistic:.2f}", "Decline × underrating gap", T["purple"])
+    kpi(ax3, f"r = {r_t.statistic:.2f}", "Speaking decline × translanguaging %", T["purple"])
 
     # Pre/post box + swarm
     ax = fig.add_subplot(gs[1, 0:2])
@@ -234,26 +235,29 @@ def make_tableau_dashboard(s: pd.DataFrame, lect: pd.DataFrame) -> Path:
 
     # Skill decline bars
     ax = fig.add_subplot(gs[1, 2:4])
-    card(ax, "Mean decline by skill (pre − post)")
+    card(ax, "Mean change by skill (pre − post; + = attrition)")
     skills = ["Listening", "Reading", "Writing", "Speaking", "Overall"]
     means = [s[f"Decline_{sk}"].mean() for sk in skills]
-    colors = [T["teal"], T["teal"], T["orange"], T["orange"], T["blue"]]
+    colors = [T["orange"], T["teal"], T["green"], T["red"], T["blue"]]
     bars = ax.bar(skills, means, color=colors, width=0.65, edgecolor="white")
     for b, m in zip(bars, means):
-        ax.text(b.get_x() + b.get_width() / 2, m + 0.04, f"{m:.2f}", ha="center", va="bottom", fontsize=8, color=T["ink"])
+        ytxt = m + (0.12 if m >= 0 else -0.25)
+        ax.text(b.get_x() + b.get_width() / 2, ytxt, f"{m:.2f}", ha="center", va="bottom" if m >= 0 else "top", fontsize=8, color=T["ink"])
     ax.axhline(0, color=T["ink"], lw=0.8)
-    ax.set_ylabel("Mean decline (points)")
-    ax.set_ylim(0, max(means) * 1.35)
+    ax.set_ylabel("Mean decline (points); negative = gain")
+    ymin = min(0, min(means)) - 0.8
+    ymax = max(means) * 1.25 + 0.4
+    ax.set_ylim(ymin, ymax)
 
     # Mechanism scatters
     ax = fig.add_subplot(gs[2, 0:2])
-    card(ax, "Golem inaccuracy path")
-    ax.scatter(s["Underrating_Gap"], s["Decline_Overall"], s=28, alpha=0.75, c=T["blue"], edgecolors="white", linewidths=0.4)
-    z = np.polyfit(s["Underrating_Gap"], s["Decline_Overall"], 1)
+    card(ax, "Golem inaccuracy → Speaking attrition")
+    ax.scatter(s["Underrating_Gap"], s["Decline_Speaking"], s=28, alpha=0.75, c=T["blue"], edgecolors="white", linewidths=0.4)
+    z = np.polyfit(s["Underrating_Gap"], s["Decline_Speaking"], 1)
     xs = np.linspace(s["Underrating_Gap"].min(), s["Underrating_Gap"].max(), 80)
     ax.plot(xs, np.polyval(z, xs), color=T["red"], lw=2.2)
     ax.set_xlabel("Underrating gap (actual − lecturer estimate)")
-    ax.set_ylabel("Overall decline")
+    ax.set_ylabel("Speaking decline")
     ax.text(
         0.03,
         0.95,
@@ -267,13 +271,13 @@ def make_tableau_dashboard(s: pd.DataFrame, lect: pd.DataFrame) -> Path:
     )
 
     ax = fig.add_subplot(gs[2, 2:4])
-    card(ax, "Treatment path (translanguaging exposure)")
-    ax.scatter(s["TL_percent"], s["Decline_Overall"], s=28, alpha=0.75, c=T["orange"], edgecolors="white", linewidths=0.4)
-    z = np.polyfit(s["TL_percent"], s["Decline_Overall"], 1)
+    card(ax, "Translanguaging → Speaking attrition")
+    ax.scatter(s["TL_percent"], s["Decline_Speaking"], s=28, alpha=0.75, c=T["orange"], edgecolors="white", linewidths=0.4)
+    z = np.polyfit(s["TL_percent"], s["Decline_Speaking"], 1)
     xs = np.linspace(s["TL_percent"].min(), s["TL_percent"].max(), 80)
     ax.plot(xs, np.polyval(z, xs), color=T["red"], lw=2.2)
     ax.set_xlabel("% of content-course time in Turkish")
-    ax.set_ylabel("Overall decline")
+    ax.set_ylabel("Speaking decline")
     ax.text(
         0.03,
         0.95,
@@ -292,7 +296,7 @@ def make_tableau_dashboard(s: pd.DataFrame, lect: pd.DataFrame) -> Path:
     return path
 
 
-def make_tableau_lecturer_dashboard(s: pd.DataFrame, lect: pd.DataFrame) -> Path:
+def make_tableau_lecturer_dashboard(s: pd.DataFrame, lect: pd.DataFrame) -> Path:  # noqa: ARG001 — s used when Speaking means absent
     fig = plt.figure(figsize=(13.5, 8.0), facecolor=T["bg"])
     fig.suptitle(
         "Lecturer-level dose–response  ·  Tableau-style  ·  SYNTHETIC",
@@ -312,42 +316,45 @@ def make_tableau_lecturer_dashboard(s: pd.DataFrame, lect: pd.DataFrame) -> Path
         "Electrical-Electronics Engineering": "EEE",
     }
     lect = lect.copy()
+    if "Mean_Decline_Speaking" not in lect.columns:
+        speak_by = s.groupby("Lecturer_ID")["Decline_Speaking"].mean()
+        lect["Mean_Decline_Speaking"] = lect["Lecturer_ID"].map(speak_by)
     lect["Major_short"] = lect["Major"].map(short)
     palette = {"ME": T["blue"], "ChE": T["orange"], "EEE": T["teal"]}
 
     ax = fig.add_subplot(gs[0, 0])
-    card(ax, "Class-mean underrating → class-mean decline")
+    card(ax, "Class-mean underrating → Speaking decline")
     for m, g in lect.groupby("Major_short"):
-        ax.scatter(g["Mean_Underrating_Gap"], g["Mean_Decline_Overall"], s=70, c=palette[m], label=m, edgecolors="white", linewidths=0.6, zorder=3)
-    z = np.polyfit(lect["Mean_Underrating_Gap"], lect["Mean_Decline_Overall"], 1)
+        ax.scatter(g["Mean_Underrating_Gap"], g["Mean_Decline_Speaking"], s=70, c=palette[m], label=m, edgecolors="white", linewidths=0.6, zorder=3)
+    z = np.polyfit(lect["Mean_Underrating_Gap"], lect["Mean_Decline_Speaking"], 1)
     xs = np.linspace(lect["Mean_Underrating_Gap"].min(), lect["Mean_Underrating_Gap"].max(), 50)
     ax.plot(xs, np.polyval(z, xs), color=T["red"], lw=2)
-    r = stats.pearsonr(lect["Mean_Underrating_Gap"], lect["Mean_Decline_Overall"])
+    r = stats.pearsonr(lect["Mean_Underrating_Gap"], lect["Mean_Decline_Speaking"])
     ax.set_xlabel("Mean underrating gap")
-    ax.set_ylabel("Mean overall decline")
+    ax.set_ylabel("Mean Speaking decline")
     ax.legend(frameon=False, fontsize=8, title="Major")
     ax.text(0.03, 0.95, f"r = {r.statistic:.2f}, p = {r.pvalue:.3f}", transform=ax.transAxes, va="top", fontsize=9, color=T["header"], fontweight="bold")
 
     ax = fig.add_subplot(gs[0, 1])
-    card(ax, "Class-mean translanguaging → class-mean decline")
+    card(ax, "Class-mean translanguaging → Speaking decline")
     for m, g in lect.groupby("Major_short"):
-        ax.scatter(g["Mean_TL_percent"], g["Mean_Decline_Overall"], s=70, c=palette[m], label=m, edgecolors="white", linewidths=0.6, zorder=3)
-    z = np.polyfit(lect["Mean_TL_percent"], lect["Mean_Decline_Overall"], 1)
+        ax.scatter(g["Mean_TL_percent"], g["Mean_Decline_Speaking"], s=70, c=palette[m], label=m, edgecolors="white", linewidths=0.6, zorder=3)
+    z = np.polyfit(lect["Mean_TL_percent"], lect["Mean_Decline_Speaking"], 1)
     xs = np.linspace(lect["Mean_TL_percent"].min(), lect["Mean_TL_percent"].max(), 50)
     ax.plot(xs, np.polyval(z, xs), color=T["red"], lw=2)
-    r = stats.pearsonr(lect["Mean_TL_percent"], lect["Mean_Decline_Overall"])
+    r = stats.pearsonr(lect["Mean_TL_percent"], lect["Mean_Decline_Speaking"])
     ax.set_xlabel("Mean % class time in Turkish")
-    ax.set_ylabel("Mean overall decline")
+    ax.set_ylabel("Mean Speaking decline")
     ax.legend(frameon=False, fontsize=8, title="Major")
     ax.text(0.03, 0.95, f"r = {r.statistic:.2f}, p = {r.pvalue:.3f}", transform=ax.transAxes, va="top", fontsize=9, color=T["header"], fontweight="bold")
 
     ax = fig.add_subplot(gs[1, :])
-    card(ax, "Lecturers ranked by class-mean decline")
-    order = lect.sort_values("Mean_Decline_Overall")
+    card(ax, "Lecturers ranked by class-mean Speaking decline")
+    order = lect.sort_values("Mean_Decline_Speaking")
     colors = [palette[m] for m in order["Major_short"]]
-    ax.barh(order["Lecturer_ID"], order["Mean_Decline_Overall"], color=colors, edgecolor="white", height=0.7)
+    ax.barh(order["Lecturer_ID"], order["Mean_Decline_Speaking"], color=colors, edgecolor="white", height=0.7)
     ax.axvline(0, color=T["ink"], lw=0.8)
-    ax.set_xlabel("Mean overall decline (positive = lower at graduation)")
+    ax.set_xlabel("Mean Speaking decline (positive = lower Speaking at graduation)")
     handles = [mpatches.Patch(color=c, label=k) for k, c in palette.items()]
     ax.legend(handles=handles, frameon=False, fontsize=8, title="Major", loc="lower right")
 
@@ -490,7 +497,7 @@ def make_rstudio_mechanism(s: pd.DataFrame) -> Path:
     long = pd.DataFrame(
         {
             "x": np.concatenate([s["Underrating_Gap"], s["TL_percent"]]),
-            "Decline": np.concatenate([s["Decline_Overall"], s["Decline_Overall"]]),
+            "Decline": np.concatenate([s["Decline_Speaking"], s["Decline_Speaking"]]),
             "Path": ([path_u] * len(s)) + ([path_t] * len(s)),
         }
     )
@@ -502,10 +509,10 @@ def make_rstudio_mechanism(s: pd.DataFrame) -> Path:
         + geom_hline(yintercept=0, linetype="dotted", color="#666666")
         + facet_wrap("~Path", scales="free_x", nrow=1)
         + labs(
-            title="Why the drop is not attrition-only (ggplot2 / RStudio style)",
-            subtitle="Decline tracks lecturer underrating and L1 exposure  ·  SYNTHETIC N = 120",
+            title="Speaking attrition tracks underrating and translanguaging",
+            subtitle="Primary outcome = Speaking decline  ·  ggplot2 / RStudio style  ·  SYNTHETIC N = 120",
             x="Predictor",
-            y="Overall decline (pre − post)",
+            y="Speaking decline (pre − post)",
         )
         + theme_rstudio()
         + theme(figure_size=(10.5, 5.0))
@@ -556,24 +563,24 @@ def make_rstudio_paired_slope(s: pd.DataFrame) -> Path:
 
 def make_rstudio_corr_heatmap(s: pd.DataFrame) -> Path:
     cols = [
-        "Decline_Overall",
+        "Decline_Speaking",
+        "Decline_Listening",
         "Underrating_Gap",
         "TL_percent",
         "PU_mean",
         "EAP_mean",
         "WTC_mean",
         "SE_mean",
-        "Pre_Overall",
     ]
     labels = [
-        "Decline",
+        "Speaking\ndecline",
+        "Listening\ndecline",
         "Underrating",
         "TL %",
         "Perceived\nunderrating",
         "Lecturer\nEAP gap",
         "WTC",
         "Self-\nefficacy",
-        "Pretest",
     ]
     corr = s[cols].corr()
     fig, ax = plt.subplots(figsize=(7.8, 6.6), facecolor="white")
@@ -622,16 +629,16 @@ def make_rstudio_ielts(s: pd.DataFrame, ielts: pd.DataFrame) -> Path:
 
 
 def make_rstudio_hist_diff(s: pd.DataFrame) -> Path:
-    df = s[["Decline_Overall"]].copy()
-    sw = stats.shapiro(df["Decline_Overall"])
+    df = s[["Decline_Speaking"]].copy()
+    sw = stats.shapiro(df["Decline_Speaking"])
     fig, ax = plt.subplots(figsize=(7.8, 5.0), facecolor="white")
-    sns.histplot(df["Decline_Overall"], bins=16, kde=True, color="#4E79A7", edgecolor="white", ax=ax)
-    ax.axvline(df["Decline_Overall"].mean(), color="#C0392B", ls="--", lw=1.6, label=f"Mean = {df['Decline_Overall'].mean():.2f}")
+    sns.histplot(df["Decline_Speaking"], bins=16, kde=True, color="#E15759", edgecolor="white", ax=ax)
+    ax.axvline(df["Decline_Speaking"].mean(), color="#C0392B", ls="--", lw=1.6, label=f"Mean = {df['Decline_Speaking'].mean():.2f}")
     ax.axvline(0, color="#222222", lw=0.9)
-    ax.set_xlabel("Difference score (pre − post)")
+    ax.set_xlabel("Speaking difference score (pre − post)")
     ax.set_ylabel("Count")
     ax.set_title(
-        f"Distribution of paired difference scores\nShapiro–Wilk W = {sw.statistic:.3f}, p = {sw.pvalue:.3f}  ·  ggplot2 / RStudio style  ·  SYNTHETIC",
+        f"Speaking attrition distribution\nShapiro–Wilk W = {sw.statistic:.3f}, p = {sw.pvalue:.3f}  ·  ggplot2 / RStudio style  ·  SYNTHETIC",
         loc="left",
         fontsize=12,
         fontweight="bold",

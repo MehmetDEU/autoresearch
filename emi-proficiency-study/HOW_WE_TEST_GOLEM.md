@@ -21,9 +21,11 @@ This sample dataset therefore measures three extra layers, plus one competing ca
                   in English and lower English self-efficacy.
                   They start asking for Turkish and using L1 sources.
 
-4. Outcome         Institutional proficiency is flat or down at
-                  graduation — especially in Writing and Speaking
-                  (the skills that need classroom airtime).
+4. Outcome         Institutional proficiency change is skill-specific:
+                  Speaking shows radical attrition; Listening a modest
+                  drop; Reading and Writing stay flat or rise slightly
+                  (academic written exposure / lab reports). Speaking
+                  loss is the primary outcome linked to translanguaging.
 ```
 
 Only step 1 + 2 + 4 is classic Golem (Babad, Inbar & Rosenthal, 1982). Step 3 is the student-side mediator; useful, not sufficient on its own.

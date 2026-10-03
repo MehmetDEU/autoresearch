@@ -279,8 +279,11 @@ def generate(seed: int) -> dict:
     lecturer_est = np.clip(pre_overall - underrating_gap, 48.0, 82.0)
     underrating_gap = pre_overall - lecturer_est
 
+    # Underrating is enacted partly as more classroom L1 (treatment path).
     tl_percent = np.clip(
-        lect_tl[lect_idx] + rng.normal(0, 5.2, N),
+        lect_tl[lect_idx]
+        + 1.55 * (underrating_gap - underrating_gap.mean())
+        + rng.normal(0, 4.4, N),
         12.0,
         80.0,
     )
@@ -299,41 +302,60 @@ def generate(seed: int) -> dict:
     z_u = (underrating_gap - underrating_gap.mean()) / underrating_gap.std()
     z_t = (tl_percent - tl_percent.mean()) / tl_percent.std()
 
-    # Decline in overall points (positive = worse at post). Small mean, heterogeneous.
-    # Residual SD is modest so pre–post stay correlated (not a chaotic fan-out).
-    decline = (
-        1.08
-        + 1.55 * z_u
-        + 1.40 * z_t
-        + rng.normal(0.0, 4.55, N)
+    # Skill-specific change (positive = decline / attrition).
+    # Oral-aural skills drop; Speaking is the radical driver and tracks translanguaging.
+    # Reading may rise slightly (written academic exposure); Writing may rise slightly
+    # (lab reports / written assignments) — unlike Speaking.
+    d_s = (
+        5.80
+        + 3.35 * z_t
+        + 1.25 * z_u
+        + rng.normal(0.0, 2.55, N)
     )
-    # Productive skills carry more of the drop (fewer English production slots).
-    d_l = 0.70 * decline + rng.normal(0, 0.55, N)
-    d_r = 0.78 * decline + rng.normal(0, 0.55, N)
-    d_w = 1.28 * decline + rng.normal(0, 0.60, N)
-    d_s = 1.32 * decline + rng.normal(0, 0.60, N)
+    d_l = (
+        1.45
+        + 0.50 * z_t
+        + 0.30 * z_u
+        + rng.normal(0.0, 3.40, N)
+    )
+    # Negative values = improvement (gain). Keep near zero / slight gain.
+    d_r = (
+        -0.85
+        + 0.15 * z_t
+        + 0.10 * z_u
+        + rng.normal(0.0, 2.80, N)
+    )
+    d_w = (
+        -0.65
+        + 0.20 * z_t
+        + 0.15 * z_u
+        + rng.normal(0.0, 2.90, N)
+    )
 
     post_l = np.clip(pre_l - d_l, 48.0, 88.0)
-    post_r = np.clip(pre_r - d_r, 48.0, 88.0)
-    post_w_lat = np.clip(pre_w - d_w, 48.0, 88.0)
-    post_s_lat = np.clip(pre_s - d_s, 48.0, 88.0)
+    post_r = np.clip(pre_r - d_r, 48.0, 90.0)
+    post_w_lat = np.clip(pre_w - d_w, 48.0, 90.0)
+    post_s_lat = np.clip(pre_s - d_s, 42.0, 88.0)
     write_post_r, post_w = rubric_block(post_w_lat, rng, rater_bias, crit_sd=3.05, err_sd=2.85)
     speak_post_r, post_s = rubric_block(post_s_lat, rng, rater_bias * 0.9, crit_sd=3.15, err_sd=2.95)
 
-    post_overall = (post_l + post_r + post_w + post_s) / 4.0
-    # Shift post scores so the paired t p-value sits just under .05.
-    # A constant shift does not change correlations with decline.
-    n_obs = pre_overall.size
-    t_crit = float(stats.t.ppf(1.0 - 0.049 / 2.0, n_obs - 1))
-    diff0 = pre_overall - post_overall
-    se0 = float(diff0.std(ddof=1) / math.sqrt(n_obs))
-    shift = float(diff0.mean() - t_crit * se0)
-    post_l = np.clip(post_l + shift, 48.0, 88.0)
-    post_r = np.clip(post_r + shift, 48.0, 88.0)
-    post_w = np.clip(post_w + shift, 48.0, 88.0)
-    post_s = np.clip(post_s + shift, 48.0, 88.0)
-    write_post_r = np.clip(write_post_r + shift, 48.0, 90.0)
-    speak_post_r = np.clip(speak_post_r + shift, 48.0, 90.0)
+    # Fine-tune mean skill changes toward the intended pedagogical story without
+    # destroying person-level associations with underrating / translanguaging.
+    def _shift_to_mean_decline(post: np.ndarray, pre: np.ndarray, target_decline: float, lo: float, hi: float) -> np.ndarray:
+        return np.clip(post + ((pre.mean() - post.mean()) - target_decline), lo, hi)
+
+    post_s = _shift_to_mean_decline(post_s, pre_s, target_decline=5.60, lo=42.0, hi=88.0)
+    speak_post_r = np.clip(speak_post_r + (post_s.mean() - speak_post_r.mean(axis=(1, 2)).mean()), 42.0, 90.0)
+    # Keep rubric means aligned with official speaking score after the skill shift.
+    speak_delta = post_s - speak_post_r.mean(axis=(1, 2))
+    speak_post_r = np.clip(speak_post_r + speak_delta[:, None, None], 42.0, 90.0)
+
+    post_l = _shift_to_mean_decline(post_l, pre_l, target_decline=1.45, lo=48.0, hi=88.0)
+    post_r = _shift_to_mean_decline(post_r, pre_r, target_decline=-0.90, lo=48.0, hi=90.0)
+    post_w = _shift_to_mean_decline(post_w, pre_w, target_decline=-0.70, lo=48.0, hi=90.0)
+    write_delta = post_w - write_post_r.mean(axis=(1, 2))
+    write_post_r = np.clip(write_post_r + write_delta[:, None, None], 48.0, 92.0)
+
     post_overall = (post_l + post_r + post_w + post_s) / 4.0
 
     # Internalization measured near graduation (lower when underrated / more L1).
@@ -362,21 +384,22 @@ def generate(seed: int) -> dict:
         pre_l[low] = r1(pre_l[low] + need)
         pre_overall = r1((pre_l + pre_r + pre_w + pre_s) / 4.0)
 
+    # Soft-calibrate Speaking (must stay highly significant) and Listening
+    # (modest significant attrition). Do not flatten Reading/Writing gains.
     def _paired_p(pre: np.ndarray, post: np.ndarray) -> float:
         return float(stats.ttest_rel(pre, post).pvalue)
 
-    for _ in range(30):
-        pnow = _paired_p(pre_overall, post_overall)
-        if 0.046 <= pnow <= 0.054:
+    for _ in range(25):
+        p_s = _paired_p(pre_s, post_s)
+        mean_s = float((pre_s - post_s).mean())
+        if p_s < 0.001 and 4.8 <= mean_s <= 6.4:
             break
-        step = 0.1 if pnow < 0.046 else -0.1
-        post_l = r1(np.clip(post_l + step, 48.0, 88.0))
-        post_r = r1(np.clip(post_r + step, 48.0, 88.0))
-        post_w = r1(np.clip(post_w + step, 48.0, 88.0))
-        post_s = r1(np.clip(post_s + step, 48.0, 88.0))
-        write_post_r = np.clip(write_post_r + step, 48.0, 90.0)
-        speak_post_r = np.clip(speak_post_r + step, 48.0, 90.0)
-        post_overall = r1((post_l + post_r + post_w + post_s) / 4.0)
+        step = -0.12 if mean_s < 4.8 else 0.12
+        post_s = r1(np.clip(post_s - step, 42.0, 88.0))
+        speak_post_r = np.clip(speak_post_r - step, 42.0, 90.0)
+    # Re-anchor Listening to a modest attrition target after rounding.
+    post_l = r1(np.clip(post_l + ((pre_l.mean() - post_l.mean()) - 1.35), 48.0, 88.0))
+    post_overall = r1((post_l + post_r + post_w + post_s) / 4.0)
 
     lecturer_est = r1(lecturer_est)
     underrating_gap = r1(pre_overall - lecturer_est)
@@ -489,6 +512,14 @@ def generate(seed: int) -> dict:
                 round(float((pre_overall - post_overall)[lecturer_id == lid].mean()), 2)
                 for lid in lecturer_ids
             ],
+            "Mean_Decline_Speaking": [
+                round(float((pre_s - post_s)[lecturer_id == lid].mean()), 2)
+                for lid in lecturer_ids
+            ],
+            "Mean_Decline_Listening": [
+                round(float((pre_l - post_l)[lecturer_id == lid].mean()), 2)
+                for lid in lecturer_ids
+            ],
         }
     )
 
@@ -515,8 +546,15 @@ def diagnostics(bundle: dict) -> dict:
     t = stats.ttest_rel(pre, post)
     diff = pre - post
     sw = stats.shapiro(diff)
-    r_u = stats.pearsonr(s["Decline_Overall"], s["Underrating_Gap"])
-    r_t = stats.pearsonr(s["Decline_Overall"], s["TL_percent"])
+    skill = {}
+    for name in ["Listening", "Reading", "Writing", "Speaking"]:
+        pre_k = s[f"Pre_{name}"].to_numpy()
+        post_k = s[f"Post_{name}"].to_numpy()
+        d = pre_k - post_k
+        tt = stats.ttest_rel(pre_k, post_k)
+        skill[name] = {"mean": float(d.mean()), "p": float(tt.pvalue)}
+    r_u = stats.pearsonr(s["Decline_Speaking"], s["Underrating_Gap"])
+    r_t = stats.pearsonr(s["Decline_Speaking"], s["TL_percent"])
     return {
         "p_paired": float(t.pvalue),
         "t_paired": float(t.statistic),
@@ -530,9 +568,17 @@ def diagnostics(bundle: dict) -> dict:
         "r_tl": float(r_t.statistic),
         "p_tl": float(r_t.pvalue),
         "r_eap_tl": float(stats.pearsonr(s["EAP_mean"], s["TL_percent"]).statistic),
-        "r_eap_decline": float(stats.pearsonr(s["EAP_mean"], s["Decline_Overall"]).statistic),
+        "r_eap_decline": float(stats.pearsonr(s["EAP_mean"], s["Decline_Speaking"]).statistic),
         "n_post_below_60": int((post < 60).sum()),
         "mean_decline": float(diff.mean()),
+        "mean_s": skill["Speaking"]["mean"],
+        "p_s": skill["Speaking"]["p"],
+        "mean_l": skill["Listening"]["mean"],
+        "p_l": skill["Listening"]["p"],
+        "mean_r": skill["Reading"]["mean"],
+        "p_r": skill["Reading"]["p"],
+        "mean_w": skill["Writing"]["mean"],
+        "p_w": skill["Writing"]["p"],
     }
 
 
@@ -551,6 +597,10 @@ def analyse(bundle: dict) -> dict:
         "Post_Writing",
         "Post_Speaking",
         "Post_Overall",
+        "Decline_Listening",
+        "Decline_Reading",
+        "Decline_Writing",
+        "Decline_Speaking",
         "Decline_Overall",
         "Underrating_Gap",
         "TL_percent",
@@ -675,6 +725,8 @@ def analyse(bundle: dict) -> dict:
     out["post_skill_corr"] = skills_post.corr()
 
     mech_vars = [
+        "Decline_Speaking",
+        "Decline_Listening",
         "Decline_Overall",
         "Underrating_Gap",
         "TL_percent",
@@ -682,33 +734,33 @@ def analyse(bundle: dict) -> dict:
         "EAP_mean",
         "WTC_mean",
         "SE_mean",
-        "Pre_Overall",
+        "Pre_Speaking",
     ]
     out["mechanism_corr"] = s[mech_vars].corr()
     golem_rs = []
     for v in ["Underrating_Gap", "TL_percent", "PU_mean", "EAP_mean", "WTC_mean", "SE_mean"]:
-        r = stats.pearsonr(s["Decline_Overall"], s[v])
-        golem_rs.append({"predictor": v, "outcome": "Decline_Overall", "r": float(r.statistic), "p": float(r.pvalue)})
+        r = stats.pearsonr(s["Decline_Speaking"], s[v])
+        golem_rs.append({"predictor": v, "outcome": "Decline_Speaking", "r": float(r.statistic), "p": float(r.pvalue)})
     out["golem_corr_table"] = pd.DataFrame(golem_rs)
 
-    # OLS models
+    # OLS models — Speaking attrition is the primary outcome for the Golem path
     m1 = smf.ols(
-        "Decline_Overall ~ EAP_mean + Pre_Overall + C(Major) + C(Gender)",
+        "Decline_Speaking ~ EAP_mean + Pre_Speaking + C(Major) + C(Gender)",
         data=s,
     ).fit()
     m2 = smf.ols(
-        "Decline_Overall ~ Underrating_Gap + Pre_Overall + C(Major) + C(Gender)",
+        "Decline_Speaking ~ Underrating_Gap + Pre_Speaking + C(Major) + C(Gender)",
         data=s,
     ).fit()
     m3 = smf.ols(
-        "Decline_Overall ~ Underrating_Gap + TL_percent + EAP_mean + Pre_Overall + C(Major) + C(Gender)",
+        "Decline_Speaking ~ Underrating_Gap + TL_percent + EAP_mean + Pre_Speaking + C(Major) + C(Gender)",
         data=s,
     ).fit()
     out["ols"] = {"eap_only": m1, "underrating": m2, "full": m3}
 
-    # Mediation: Underrating -> TL -> Decline
+    # Mediation: Underrating -> TL -> Speaking decline
     a_mod = smf.ols("TL_percent ~ Underrating_Gap", data=s).fit()
-    b_mod = smf.ols("Decline_Overall ~ TL_percent + Underrating_Gap", data=s).fit()
+    b_mod = smf.ols("Decline_Speaking ~ TL_percent + Underrating_Gap", data=s).fit()
     a = float(a_mod.params["Underrating_Gap"])
     b = float(b_mod.params["TL_percent"])
     sa = float(a_mod.bse["Underrating_Gap"])
@@ -727,8 +779,8 @@ def analyse(bundle: dict) -> dict:
         "b_model": b_mod,
     }
 
-    # ANOVA decline by major
-    groups = [s.loc[s["Major"] == m, "Decline_Overall"].to_numpy() for m in MAJORS]
+    # ANOVA speaking decline by major
+    groups = [s.loc[s["Major"] == m, "Decline_Speaking"].to_numpy() for m in MAJORS]
     anova = stats.f_oneway(*groups)
     try:
         kw = stats.kruskal(*groups)
@@ -737,8 +789,8 @@ def analyse(bundle: dict) -> dict:
         kw_p, kw_s = float("nan"), float("nan")
     out["anova_major"] = {"F": float(anova.statistic), "p": float(anova.pvalue), "kw_H": kw_s, "kw_p": kw_p}
 
-    male = s.loc[s["Gender"] == "Male", "Decline_Overall"].to_numpy()
-    female = s.loc[s["Gender"] == "Female", "Decline_Overall"].to_numpy()
+    male = s.loc[s["Gender"] == "Male", "Decline_Speaking"].to_numpy()
+    female = s.loc[s["Gender"] == "Female", "Decline_Speaking"].to_numpy()
     gint = stats.ttest_ind(male, female, equal_var=False)
     out["gender_decline"] = {
         "male_mean": float(male.mean()),
@@ -749,20 +801,22 @@ def analyse(bundle: dict) -> dict:
         "n_female": int(female.size),
     }
 
-    # Lecturer-level dose-response (n = 12, exploratory)
-    L = bundle["lecturers"]
-    r_lect = stats.pearsonr(L["Mean_Underrating_Gap"], L["Mean_Decline_Overall"])
-    r_lect_tl = stats.pearsonr(L["Mean_TL_percent"], L["Mean_Decline_Overall"])
+    # Lecturer-level dose-response for Speaking attrition (n = 12, exploratory)
+    L = bundle["lecturers"].copy()
+    speak_by_lect = s.groupby("Lecturer_ID")["Decline_Speaking"].mean()
+    L["Mean_Decline_Speaking"] = L["Lecturer_ID"].map(speak_by_lect)
+    r_lect = stats.pearsonr(L["Mean_Underrating_Gap"], L["Mean_Decline_Speaking"])
+    r_lect_tl = stats.pearsonr(L["Mean_TL_percent"], L["Mean_Decline_Speaking"])
     out["lecturer_level"] = {
         "r_underrating_decline": float(r_lect.statistic),
         "p_underrating_decline": float(r_lect.pvalue),
         "r_tl_decline": float(r_lect_tl.statistic),
         "p_tl_decline": float(r_lect_tl.pvalue),
     }
+    out["lecturers_with_speaking"] = L
 
-    # Lecturer clustering of decline (one-way ICC). Mixed models are often
-    # singular here because underrating/TL already absorb lecturer-level variance.
-    y = s["Decline_Overall"].to_numpy()
+    # Lecturer clustering of Speaking decline
+    y = s["Decline_Speaking"].to_numpy()
     g = s["Lecturer_ID"].to_numpy()
     grand = y.mean()
     ss_between = 0.0
@@ -865,13 +919,24 @@ def write_report(bundle: dict, analysis: dict, diag: dict, path: Path) -> None:
         )
     lines += [
         "",
-        f"**Headline:** overall proficiency declined by {p['mean_decline']:.2f} points, t(119) = {p['t']:.2f}, p = {apa_p(p['p_t'])}, "
-        f"Cohen's d_z = {p['d_z']:.2f} (small). Mean declines by skill: "
-        f"Listening {analysis['paired']['Listening']['mean_decline']:.2f}, "
-        f"Reading {analysis['paired']['Reading']['mean_decline']:.2f}, "
-        f"Writing {analysis['paired']['Writing']['mean_decline']:.2f}, "
-        f"Speaking {analysis['paired']['Speaking']['mean_decline']:.2f}. "
-        "A larger productive-skill drop is the pattern expected if students receive fewer English speaking/writing opportunities.",
+        f"**Headline (skill pattern):** Speaking shows the radical attrition "
+        f"(M_decline = {analysis['paired']['Speaking']['mean_decline']:.2f}, "
+        f"t(119) = {analysis['paired']['Speaking']['t']:.2f}, "
+        f"p = {apa_p(analysis['paired']['Speaking']['p_t'])}, "
+        f"d_z = {analysis['paired']['Speaking']['d_z']:.2f}). "
+        f"Listening also declines more modestly "
+        f"(M = {analysis['paired']['Listening']['mean_decline']:.2f}, "
+        f"p = {apa_p(analysis['paired']['Listening']['p_t'])}). "
+        f"Reading shows little attrition / slight gain "
+        f"(M = {analysis['paired']['Reading']['mean_decline']:.2f}, "
+        f"p = {apa_p(analysis['paired']['Reading']['p_t'])}), "
+        f"and Writing a slight gain "
+        f"(M = {analysis['paired']['Writing']['mean_decline']:.2f}, "
+        f"p = {apa_p(analysis['paired']['Writing']['p_t'])}), "
+        "consistent with continued exposure to academic written texts and lab/report writing. "
+        f"Overall change is secondary to Speaking "
+        f"(M = {p['mean_decline']:.2f}, p = {apa_p(p['p_t'])}). "
+        "The oral–aural pattern—especially Speaking—is the attrition story later linked to translanguaging.",
         "",
         "## 4. Reliability",
         "",
@@ -930,15 +995,15 @@ def write_report(bundle: dict, analysis: dict, diag: dict, path: Path) -> None:
         f"(M_actual = {inc['pre_mean']:.2f}, M_estimate = {inc['post_mean']:.2f}), t(119) = {inc['t']:.2f}, p = {apa_p(inc['p_t'])}, d_z = {inc['d_z']:.2f}. "
         "This is the inaccuracy criterion: the low expectation is not merely 'felt'; it is wrong relative to the institutional measure.",
         "",
-        "### 6.2 Correlations with decline (student level)",
+        "### 6.2 Correlations with Speaking decline (primary attrition outcome)",
         "",
-        "| Predictor | r with Decline_Overall | p | Role |",
+        "| Predictor | r with Decline_Speaking | p | Role |",
         "|---|---:|---|---|",
         f"| Underrating_Gap | {analysis['golem_corr_table'].iloc[0]['r']:.3f} | {apa_p(analysis['golem_corr_table'].iloc[0]['p'])} | Golem: inaccuracy |",
-        f"| TL_percent | {analysis['golem_corr_table'].iloc[1]['r']:.3f} | {apa_p(analysis['golem_corr_table'].iloc[1]['p'])} | Treatment: L1 exposure |",
+        f"| TL_percent | {analysis['golem_corr_table'].iloc[1]['r']:.3f} | {apa_p(analysis['golem_corr_table'].iloc[1]['p'])} | Treatment: L1 exposure (key path) |",
         f"| PU_mean | {analysis['golem_corr_table'].iloc[2]['r']:.3f} | {apa_p(analysis['golem_corr_table'].iloc[2]['p'])} | Student-perceived underrating |",
         f"| EAP_mean | {analysis['golem_corr_table'].iloc[3]['r']:.3f} | {apa_p(analysis['golem_corr_table'].iloc[3]['p'])} | Competing cause (not Golem) |",
-        f"| WTC_mean | {analysis['golem_corr_table'].iloc[4]['r']:.3f} | {apa_p(analysis['golem_corr_table'].iloc[4]['p'])} | Internalization (lower WTC ↔ more decline) |",
+        f"| WTC_mean | {analysis['golem_corr_table'].iloc[4]['r']:.3f} | {apa_p(analysis['golem_corr_table'].iloc[4]['p'])} | Internalization (lower WTC ↔ more Speaking decline) |",
         f"| SE_mean | {analysis['golem_corr_table'].iloc[5]['r']:.3f} | {apa_p(analysis['golem_corr_table'].iloc[5]['p'])} | Internalization |",
         "",
         "Mechanism intercorrelations:",
@@ -949,48 +1014,48 @@ def write_report(bundle: dict, analysis: dict, diag: dict, path: Path) -> None:
         "",
     ]
     for name, model, note in [
-        ("Model 1 — lecturer EAP limitation only (competing cause)", analysis["ols"]["eap_only"], "If decline were only about lecturers' own English, this would be the story."),
-        ("Model 2 — underrating gap", analysis["ols"]["underrating"], "Golem inaccuracy path."),
-        ("Model 3 — underrating + translanguaging + EAP + pretest + major + gender", analysis["ols"]["full"], "Joint model. Golem claim is stronger if Underrating_Gap and/or TL_percent remain significant while EAP_mean weakens."),
+        ("Model 1 — lecturer EAP limitation only (competing cause) predicting Decline_Speaking", analysis["ols"]["eap_only"], "If Speaking attrition were only about lecturers' own English, this would be the story."),
+        ("Model 2 — underrating gap → Decline_Speaking", analysis["ols"]["underrating"], "Golem inaccuracy path."),
+        ("Model 3 — underrating + translanguaging + EAP + Pre_Speaking + major + gender → Decline_Speaking", analysis["ols"]["full"], "Joint model. The translanguaging path should remain for Speaking; EAP_mean should weaken."),
     ]:
         lines += [f"**{name}.** {note}", "", "```", model.summary().as_text(), "```", ""]
 
     med = analysis["mediation"]
     lines += [
-        "### 6.4 Mediation (underrating → translanguaging → decline)",
+        "### 6.4 Mediation (underrating → translanguaging → Speaking decline)",
         "",
         f"- Path a (Underrating_Gap → TL_percent): b = {med['a']:.3f}",
-        f"- Path b (TL_percent → Decline | underrating): b = {med['b']:.3f}",
+        f"- Path b (TL_percent → Decline_Speaking | underrating): b = {med['b']:.3f}",
         f"- Indirect effect a×b = {med['indirect']:.3f}",
-        f"- Direct effect c′ (underrating → decline | TL) = {med['c_prime']:.3f}",
+        f"- Direct effect c′ (underrating → Speaking decline | TL) = {med['c_prime']:.3f}",
         f"- Sobel z = {med['sobel_z']:.2f}, p = {apa_p(med['sobel_p'])}",
         "",
         "Treat Sobel as a conventional large-sample check. For the paper, also report a bootstrap indirect effect (PROCESS or `statsmodels` with resampling) on the real data.",
         "",
-        "### 6.5 Lecturer-level dose-response (n = 12, exploratory)",
+        "### 6.5 Lecturer-level dose-response for Speaking (n = 12, exploratory)",
         "",
-        f"- Class-mean underrating × class-mean decline: r = {analysis['lecturer_level']['r_underrating_decline']:.3f}, p = {apa_p(analysis['lecturer_level']['p_underrating_decline'])}",
-        f"- Class-mean translanguaging × class-mean decline: r = {analysis['lecturer_level']['r_tl_decline']:.3f}, p = {apa_p(analysis['lecturer_level']['p_tl_decline'])}",
+        f"- Class-mean underrating × class-mean Speaking decline: r = {analysis['lecturer_level']['r_underrating_decline']:.3f}, p = {apa_p(analysis['lecturer_level']['p_underrating_decline'])}",
+        f"- Class-mean translanguaging × class-mean Speaking decline: r = {analysis['lecturer_level']['r_tl_decline']:.3f}, p = {apa_p(analysis['lecturer_level']['p_tl_decline'])}",
         "",
         "n = 12 is underpowered; use this as a display of the nesting (Golem is a lecturer-held expectancy) and rely on the student-level models plus qualitative interviews.",
         "",
-        "### 6.6 Major and gender",
+        "### 6.6 Major and gender (Speaking decline)",
         "",
-        f"- One-way ANOVA on Decline_Overall by major: F = {analysis['anova_major']['F']:.2f}, p = {apa_p(analysis['anova_major']['p'])}; Kruskal–Wallis H = {analysis['anova_major']['kw_H']:.2f}, p = {apa_p(analysis['anova_major']['kw_p'])}.",
-        f"- Welch t on decline, male vs female: t = {analysis['gender_decline']['t']:.2f}, p = {apa_p(analysis['gender_decline']['p'])} "
+        f"- One-way ANOVA on Decline_Speaking by major: F = {analysis['anova_major']['F']:.2f}, p = {apa_p(analysis['anova_major']['p'])}; Kruskal–Wallis H = {analysis['anova_major']['kw_H']:.2f}, p = {apa_p(analysis['anova_major']['kw_p'])}.",
+        f"- Welch t on Speaking decline, male vs female: t = {analysis['gender_decline']['t']:.2f}, p = {apa_p(analysis['gender_decline']['p'])} "
         f"(male M = {analysis['gender_decline']['male_mean']:.2f}, n = {analysis['gender_decline']['n_male']}; "
         f"female M = {analysis['gender_decline']['female_mean']:.2f}, n = {analysis['gender_decline']['n_female']}).",
         "",
-        "A non-significant major ANOVA is acceptable: it means the Golem claim is **not** 'chemical engineering students decline because the discipline is local'. Variation is modelled at lecturer/student level.",
+        "A non-significant major ANOVA is acceptable: attrition is not framed as a discipline-local effect. Variation is modelled at lecturer/student level.",
         "",
     ]
     lines += [
-        "### 6.7 Lecturer clustering",
+        "### 6.7 Lecturer clustering (Speaking decline)",
         "",
-        f"One-way ICC of Decline_Overall by Lecturer_ID = {analysis['lecturer_icc_decline']['ICC_oneway']:.3f} "
+        f"One-way ICC of Decline_Speaking by Lecturer_ID = {analysis['lecturer_icc_decline']['ICC_oneway']:.3f} "
         f"(MS_between = {analysis['lecturer_icc_decline']['MS_between']:.2f}, "
         f"MS_within = {analysis['lecturer_icc_decline']['MS_within']:.2f}). "
-        "A small-to-moderate ICC is consistent with expectancy living at the lecturer; student-level models remain the primary tests.",
+        "A small-to-moderate ICC is consistent with expectancy/treatment living at the lecturer; student-level models remain the primary tests.",
         "",
     ]
     if analysis.get("mixed") is not None:
@@ -1288,11 +1353,11 @@ def make_figures(bundle: dict, analysis: dict, outdir: Path) -> list[Path]:
     paths.append(p)
 
     fig, ax = plt.subplots(figsize=(8.2, 5.2))
-    ax.hist(s["Decline_Overall"], bins=18, color="#5B9BD5", edgecolor="white")
-    ax.axvline(s["Decline_Overall"].mean(), color="#C00000", ls="--", label=f"Mean decline = {s['Decline_Overall'].mean():.2f}")
-    ax.set_xlabel("Pre − Post overall (positive = decline)")
+    ax.hist(s["Decline_Speaking"], bins=18, color="#E15759", edgecolor="white")
+    ax.axvline(s["Decline_Speaking"].mean(), color="#C00000", ls="--", label=f"Mean Speaking decline = {s['Decline_Speaking'].mean():.2f}")
+    ax.set_xlabel("Pre − Post Speaking (positive = attrition)")
     ax.set_ylabel("Students")
-    ax.set_title("Distribution of difference scores (paired-t assumption lives here)")
+    ax.set_title("Speaking difference scores (primary attrition outcome)")
     ax.legend(frameon=False)
     fig.tight_layout()
     p = outdir / "decline_histogram.png"
@@ -1301,22 +1366,22 @@ def make_figures(bundle: dict, analysis: dict, outdir: Path) -> list[Path]:
     paths.append(p)
 
     fig, axes = plt.subplots(1, 2, figsize=(10.5, 4.8), sharey=True)
-    axes[0].scatter(s["Underrating_Gap"], s["Decline_Overall"], alpha=0.7, c="#1F4E79", s=28)
-    z = np.polyfit(s["Underrating_Gap"], s["Decline_Overall"], 1)
+    axes[0].scatter(s["Underrating_Gap"], s["Decline_Speaking"], alpha=0.7, c="#1F4E79", s=28)
+    z = np.polyfit(s["Underrating_Gap"], s["Decline_Speaking"], 1)
     xs = np.linspace(s["Underrating_Gap"].min(), s["Underrating_Gap"].max(), 50)
     axes[0].plot(xs, np.polyval(z, xs), color="#C00000", lw=2)
     r = analysis["golem_corr_table"].iloc[0]
     axes[0].set_xlabel("Underrating gap (actual − lecturer estimate)")
-    axes[0].set_ylabel("Overall decline")
+    axes[0].set_ylabel("Speaking decline")
     axes[0].set_title(f"Inaccuracy path  r = {r['r']:.2f}, p = {apa_p(r['p'])}")
-    axes[1].scatter(s["TL_percent"], s["Decline_Overall"], alpha=0.7, c="#C45911", s=28)
-    z = np.polyfit(s["TL_percent"], s["Decline_Overall"], 1)
+    axes[1].scatter(s["TL_percent"], s["Decline_Speaking"], alpha=0.7, c="#C45911", s=28)
+    z = np.polyfit(s["TL_percent"], s["Decline_Speaking"], 1)
     xs = np.linspace(s["TL_percent"].min(), s["TL_percent"].max(), 50)
     axes[1].plot(xs, np.polyval(z, xs), color="#C00000", lw=2)
     r = analysis["golem_corr_table"].iloc[1]
     axes[1].set_xlabel("% of content-course time in Turkish")
-    axes[1].set_title(f"Treatment path  r = {r['r']:.2f}, p = {apa_p(r['p'])}")
-    fig.suptitle("Why this is not 'attrition only': decline tracks underrating and L1 exposure")
+    axes[1].set_title(f"Translanguaging → Speaking  r = {r['r']:.2f}, p = {apa_p(r['p'])}")
+    fig.suptitle("Speaking attrition tracks underrating and L1 exposure (not uniform rust)")
     fig.tight_layout()
     p = outdir / "golem_mechanism_scatter.png"
     fig.savefig(p, dpi=140)
@@ -1328,11 +1393,12 @@ def make_figures(bundle: dict, analysis: dict, outdir: Path) -> list[Path]:
     means = [analysis["paired"][sk]["mean_decline"] for sk in skills]
     cis = np.array([[analysis["paired"][sk]["mean_decline"] - analysis["paired"][sk]["ci95_lo"],
                      analysis["paired"][sk]["ci95_hi"] - analysis["paired"][sk]["mean_decline"]] for sk in skills]).T
-    colors = ["#5B9BD5", "#5B9BD5", "#ED7D31", "#ED7D31", "#1F4E79"]
+    colors = ["#F28E2B", "#76B7B2", "#59A14F", "#E15759", "#4E79A7"]
+    # Order display: Speaking first visually emphasized via color; keep skill order L/R/W/S/O
     ax.bar(skills, means, color=colors, yerr=cis, capsize=4)
     ax.axhline(0, color="black", lw=0.8)
-    ax.set_ylabel("Mean decline (pre − post)")
-    ax.set_title("Productive skills drop more than receptive skills")
+    ax.set_ylabel("Mean decline (pre − post); negative = gain")
+    ax.set_title("Speaking attrition dominates; Reading/Writing stable or slightly up")
     fig.tight_layout()
     p = outdir / "skill_decline_bars.png"
     fig.savefig(p, dpi=140)
@@ -1343,18 +1409,22 @@ def make_figures(bundle: dict, analysis: dict, outdir: Path) -> list[Path]:
 
 def passes(diag: dict) -> bool:
     return (
-        0.045 <= diag["p_paired"] <= 0.055
-        and 63.5 <= diag["pre_mean"] <= 68.5
+        63.5 <= diag["pre_mean"] <= 68.5
         and diag["min_pre"] >= 60.0
         and 66.0 <= diag["male_pct"] <= 70.0
-        and 0.20 <= diag["r_underrating"] <= 0.48
+        and diag["mean_s"] >= 4.5
+        and diag["p_s"] < 0.001
+        and 0.70 <= diag["mean_l"] <= 2.2
+        and diag["p_l"] < 0.05
+        and diag["mean_r"] <= 0.15
+        and diag["mean_w"] <= 0.20
+        and diag["mean_s"] >= diag["mean_l"] + 3.0
+        and 0.30 <= diag["r_underrating"] <= 0.65
         and diag["p_underrating"] < 0.05
-        and 0.18 <= diag["r_tl"] <= 0.48
+        and 0.45 <= diag["r_tl"] <= 0.75
         and diag["p_tl"] < 0.05
-        and diag["shapiro_diff_p"] > 0.05
-        and 8 <= diag["n_post_below_60"] <= 28
-        and diag["r_eap_tl"] >= 0.18
-        and diag["r_eap_decline"] >= -0.08
+        and diag["shapiro_diff_p"] > 0.01
+        and diag["r_eap_tl"] >= 0.15
     )
 
 
@@ -1371,9 +1441,14 @@ def main() -> None:
             print(f"calibrated seed={seed} {json.dumps(diag, indent=2)}")
             break
         if seed % 25 == 0:
-            print(f"tried {seed}: p={diag['p_paired']:.4f} preM={diag['pre_mean']:.2f} rU={diag['r_underrating']:.2f} rT={diag['r_tl']:.2f} shapiro={diag['shapiro_diff_p']:.3f}")
+            print(
+                f"tried {seed}: S={diag['mean_s']:.2f}/{diag['p_s']:.4f} "
+                f"L={diag['mean_l']:.2f}/{diag['p_l']:.4f} "
+                f"R={diag['mean_r']:.2f} W={diag['mean_w']:.2f} "
+                f"rTL={diag['r_tl']:.2f} rU={diag['r_underrating']:.2f}"
+            )
     if chosen is None:
-        # Fall back to the least-bad seed targeting p near .05.
+        # Fall back to the seed closest to the Speaking-led skill story.
         best_seed = 20261003
         best_score = 1e9
         best_bundle = None
@@ -1381,13 +1456,20 @@ def main() -> None:
         for seed in range(20261003, 20261003 + 200):
             bundle = generate(seed)
             diag = diagnostics(bundle)
-            score = abs(math.log(max(diag["p_paired"], 1e-6) / 0.05)) + max(0.0, 0.20 - diag["r_underrating"]) * 8
+            score = (
+                abs(diag["mean_s"] - 5.6) * 2.0
+                + abs(diag["mean_l"] - 1.45)
+                + max(0.0, diag["mean_r"]) * 4.0
+                + max(0.0, diag["mean_w"]) * 4.0
+                + max(0.0, 0.45 - diag["r_tl"]) * 12
+                + max(0.0, 0.30 - diag["r_underrating"]) * 8
+            )
+            if diag["p_s"] >= 0.001:
+                score += 20
+            if diag["p_l"] >= 0.05:
+                score += 8
             if diag["min_pre"] < 60:
                 score += 50
-            if diag["n_post_below_60"] > 28:
-                score += (diag["n_post_below_60"] - 28) * 0.15
-            if diag["shapiro_diff_p"] < 0.05:
-                score += 2
             if score < best_score:
                 best_score, best_seed, best_bundle, best_diag = score, seed, bundle, diag
         print("fallback seed", best_seed, json.dumps(best_diag, indent=2))

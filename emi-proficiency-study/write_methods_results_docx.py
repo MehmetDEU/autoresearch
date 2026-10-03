@@ -5,6 +5,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pandas as pd
+from scipy import stats
+
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.oxml.ns import qn
@@ -14,6 +17,42 @@ ROOT = Path(__file__).resolve().parent
 DESKTOP = Path("/home/ubuntu/Desktop/EMI Discouragement Project")
 ART = Path("/opt/cursor/artifacts")
 OUT_NAME = "EMI_Methodology_and_Quantitative_Results.docx"
+XLSX = ROOT / "EMI_PYP_pre_post_synthetic_N120.xlsx"
+
+
+def load_live():
+    students = pd.read_excel(XLSX, "Students")
+    paired = pd.read_excel(XLSX, "Paired_pre_post").set_index("skill")
+    golem = pd.read_excel(XLSX, "Golem_correlations")
+    desc = pd.read_excel(XLSX, "Descriptives").set_index("variable")
+    rel = pd.read_excel(XLSX, "Reliability").set_index("scale")
+    icc = pd.read_excel(XLSX, "ICC_raters").set_index("facet")
+    ielts = pd.read_excel(XLSX, "Concurrent_IELTS")
+    reg = pd.read_excel(XLSX, "Regression_models")
+    med = pd.read_excel(XLSX, "Mediation").set_index("quantity")
+    return {
+        "students": students,
+        "paired": paired,
+        "golem": golem,
+        "desc": desc,
+        "rel": rel,
+        "icc": icc,
+        "ielts": ielts,
+        "reg": reg,
+        "med": med,
+    }
+
+
+def fmt(x, nd=2):
+    return f"{float(x):.{nd}f}"
+
+
+def apa_p(p):
+    p = float(p)
+    if p < 0.001:
+        return "<.001"
+    return f"{p:.3f}".replace("0.", ".")
+
 
 
 def set_run_font(run, *, bold=False, italic=False, size=11, color=None):
@@ -101,6 +140,16 @@ def add_caption(doc, text):
 
 
 def build() -> Path:
+    live = load_live()
+    s = live["students"]
+    paired = live["paired"]
+    golem = live["golem"].set_index("predictor")
+    desc = live["desc"]
+    rel = live["rel"]
+    icc = live["icc"]
+    ielts = live["ielts"].set_index("institutional")
+    reg = live["reg"]
+    med = live["med"]
     doc = Document()
     section = doc.sections[0]
     section.top_margin = Inches(1)
@@ -267,185 +316,201 @@ def build() -> Path:
     add_heading_styled(doc, "Quantitative Results", level=1)
 
     add_heading_styled(doc, "Descriptive statistics and normality", level=2)
+    pre_m = desc.loc["Pre_Overall", "mean"]; pre_sd = desc.loc["Pre_Overall", "sd"]; pre_min = desc.loc["Pre_Overall", "min"]
+    post_m = desc.loc["Post_Overall", "mean"]; post_sd = desc.loc["Post_Overall", "sd"]
+    n_below = int((s["Post_Overall"] < 60).sum())
+    sw_w = desc.loc["Decline_Speaking", "shapiro_W"]; sw_p = desc.loc["Decline_Speaking", "shapiro_p"]
     add_para(
         doc,
-        "All 120 students scored at or above the institutional B1 threshold on the pretest "
-        "(Pre_Overall minimum = 60.1; M = 67.55, SD = 4.85). At graduation, the overall mean was 66.70 "
-        "(SD = 6.39), and 14 students (11.7%) scored below 60. Table 1 summarises distributional "
-        "properties for key variables. Shapiro–Wilk on the overall difference scores was compatible with "
-        "normality (W = 0.980, p = .069), supporting the paired t-test; Wilcoxon results are reported "
-        "alongside."
+        f"All 120 students scored at or above the institutional B1 threshold on the pretest "
+        f"(Pre_Overall minimum = {fmt(pre_min,1)}; M = {fmt(pre_m)}, SD = {fmt(pre_sd)}). "
+        f"At graduation, the overall mean was {fmt(post_m)} (SD = {fmt(post_sd)}), and {n_below} students "
+        f"({n_below/120*100:.1f}%) scored below 60. Table 1 summarises key variables. "
+        f"Shapiro–Wilk on Speaking difference scores was W = {fmt(sw_w,3)}, p = {apa_p(sw_p)}.",
     )
 
     add_caption(doc, "Table 1. Descriptive statistics for key variables (N = 120)")
     t1 = doc.add_table(rows=1, cols=7)
     fill_header_row(t1.rows[0], ["Variable", "M", "SD", "Min", "Max", "Skew", "Kurtosis"])
-    for row in [
-        ("Pre_Overall", "67.55", "4.85", "60.1", "79.0", "0.13", "−0.84"),
-        ("Post_Overall", "66.70", "6.39", "54.2", "84.2", "0.63", "0.05"),
-        ("Decline_Overall", "0.85", "4.67", "−12.5", "9.3", "−0.17", "−0.58"),
-        ("Underrating_Gap", "8.44", "3.74", "1.4", "18.6", "0.39", "−0.10"),
-        ("TL_percent", "38.45", "8.57", "19.0", "62.2", "0.38", "−0.31"),
-        ("PU_mean", "3.07", "0.69", "1.2", "4.8", "0.06", "−0.21"),
-        ("EAP_mean", "3.14", "0.72", "1.6", "4.8", "−0.01", "−0.50"),
-        ("WTC_mean", "3.87", "0.70", "2.0", "5.0", "−0.44", "−0.52"),
-        ("SE_mean", "3.86", "0.72", "2.2", "5.0", "−0.36", "−0.68"),
+    for var in [
+        "Pre_Overall", "Post_Overall", "Decline_Speaking", "Decline_Listening",
+        "Decline_Reading", "Decline_Writing", "Underrating_Gap", "TL_percent",
+        "PU_mean", "EAP_mean", "WTC_mean", "SE_mean",
     ]:
+        row = desc.loc[var]
         cells = t1.add_row().cells
-        for i, val in enumerate(row):
+        vals = [var, fmt(row["mean"]), fmt(row["sd"]), fmt(row["min"],1), fmt(row["max"],1), fmt(row["skew"]), fmt(row["kurtosis_excess"])]
+        for i, val in enumerate(vals):
             cells[i].text = val
     set_table_style(t1)
     add_para(
         doc,
-        "Note. Decline_Overall = Pre_Overall − Post_Overall (positive = lower score at graduation). "
-        "Kurtosis = excess kurtosis.",
-        first_indent=False,
-        italic=True,
-        size=9,
-        space_after=12,
+        "Note. Decline_* = Pre − Post (positive = attrition; negative = gain). Kurtosis = excess kurtosis.",
+        first_indent=False, italic=True, size=9, space_after=12,
     )
 
     add_heading_styled(doc, "Reliability and validity of the institutional test", level=2)
     add_para(
         doc,
-        "Internal consistency was acceptable to high across administrations. Cronbach’s α for the eight "
-        "Listening/Reading section scores was .879 at pretest and .920 at posttest. Writing and Speaking "
-        "criteria alphas ranged from .904 to .956. Questionnaire alphas were .849 (perceived underrating), "
-        ".878 (translanguaging), .885 (lecturer EAP limitation), .854 (WTC), and .871 (self-efficacy). "
-        "Inter-rater ICCs for the three-rater official means were high: Writing ICC(2,k) = .965 (pre) and "
-        ".983 (post); Speaking ICC(2,k) = .966 (pre) and .979 (post)."
+        f"Internal consistency was acceptable to high. Cronbach’s α for the eight Listening/Reading section "
+        f"scores was {fmt(rel.loc['Pre_full_sections','Cronbach_alpha'],3)} at pretest and "
+        f"{fmt(rel.loc['Post_full_sections','Cronbach_alpha'],3)} at posttest. "
+        f"Questionnaire alphas were {fmt(rel.loc['Perceived_underrating_PU','Cronbach_alpha'],3)} (perceived underrating), "
+        f"{fmt(rel.loc['Translanguaging_Likert_TL','Cronbach_alpha'],3)} (translanguaging), "
+        f"{fmt(rel.loc['Lecturer_EAP_limitation','Cronbach_alpha'],3)} (lecturer EAP limitation), "
+        f"{fmt(rel.loc['WTC_English','Cronbach_alpha'],3)} (WTC), and "
+        f"{fmt(rel.loc['Self_efficacy_English','Cronbach_alpha'],3)} (self-efficacy). "
+        f"Inter-rater ICC(2,k) values for the official three-rater means were "
+        f"{fmt(icc.loc['Writing_Pre','ICC2_k_average'],3)} / {fmt(icc.loc['Writing_Post','ICC2_k_average'],3)} for Writing and "
+        f"{fmt(icc.loc['Speaking_Pre','ICC2_k_average'],3)} / {fmt(icc.loc['Speaking_Post','ICC2_k_average'],3)} for Speaking (pre/post).",
     )
     add_para(
         doc,
-        "Concurrent validity against official IELTS Academic practice materials (n = 36) was substantial for "
-        "the overall score (r = .788, p < .001) and moderate-to-strong by skill (Listening r = .610; "
-        "Reading r = .868; Writing r = .649; Speaking r = .682; all p < .001). Pretest skill "
-        "intercorrelations were moderate-to-strong (rs = .71–.78 among skills; .89–.91 with overall), "
-        "consistent with a common academic-English factor."
+        f"Concurrent validity against official IELTS Academic practice materials (n = 36) was "
+        f"r = {fmt(ielts.loc['Pre_Overall','r'],3)} (p {apa_p(ielts.loc['Pre_Overall','p'])}) for the overall score; "
+        f"skill correlations were Listening {fmt(ielts.loc['Pre_Listening','r'],3)}, "
+        f"Reading {fmt(ielts.loc['Pre_Reading','r'],3)}, "
+        f"Writing {fmt(ielts.loc['Pre_Writing','r'],3)}, and "
+        f"Speaking {fmt(ielts.loc['Pre_Speaking','r'],3)} (all p < .001).",
     )
 
-    add_heading_styled(doc, "Pre–post proficiency change", level=2)
+    add_heading_styled(doc, "Pre–post proficiency change: Speaking-led attrition", level=2)
+    sp = paired.loc["Speaking"]; li = paired.loc["Listening"]; re_ = paired.loc["Reading"]; wr = paired.loc["Writing"]; ov = paired.loc["Overall"]
     add_mixed_para(
         doc,
         [
-            ("A paired-samples t-test showed a small but statistically significant decline in overall ", False, False),
-            ("institutional proficiency from PYP exit to graduation, t(119) = 2.00, p = .048, ", False, False),
-            ("95% CI [0.01, 1.69], Cohen’s d_z = 0.18 ", False, False),
-            ("(Wilcoxon p = .039). ", False, False),
-            ("The mean decline was 0.85 points (Pre M = 67.55, Post M = 66.70). ", False, False),
-            ("Table 2 reports skill-level results. Writing and Speaking showed clearer declines ", False, False),
-            ("(Writing: M_decline = 1.14, t(119) = 2.08, p = .039; Speaking: M_decline = 1.14, ", False, False),
-            ("t(119) = 2.06, p = .042) than Listening (p = .088) and Reading (p = .063). ", False, False),
-            ("This productive-skill emphasis is consistent with a classroom ecology in which students ", False, False),
-            ("receive fewer opportunities to speak and write in English.", False, False),
+            ("Attrition was not uniform across skills. ", False, False),
+            (f"Speaking showed the radical decline (M_decline = {fmt(sp['mean_decline'])}, ", False, False),
+            (f"t(119) = {fmt(sp['t'])}, p {apa_p(sp['p_t'])}, d_z = {fmt(sp['d_z'])}). ", False, False),
+            (f"Listening also declined more modestly (M = {fmt(li['mean_decline'])}, p {apa_p(li['p_t'])}). ", False, False),
+            (f"Reading showed a slight gain (M = {fmt(re_['mean_decline'])}, p {apa_p(re_['p_t'])}), ", False, False),
+            ("consistent with continued exposure to academic written texts, ", False, False),
+            (f"and Writing a slight gain (M = {fmt(wr['mean_decline'])}, p {apa_p(wr['p_t'])}), ", False, False),
+            ("consistent with lab reports and written assignments. ", False, False),
+            ("The oral–aural pattern—especially Speaking—is therefore the attrition story later linked to translanguaging.", False, False),
         ],
     )
 
     add_caption(doc, "Table 2. Paired pre–post comparisons by skill (N = 120)")
     t2 = doc.add_table(rows=1, cols=8)
-    fill_header_row(
-        t2.rows[0],
-        ["Skill", "Pre M (SD)", "Post M (SD)", "M decline", "t(119)", "p", "Wilcoxon p", "d_z"],
-    )
-    for row in [
-        ("Listening", "68.54 (5.08)", "68.04 (5.46)", "0.50", "1.72", ".088", ".075", "0.16"),
-        ("Reading", "67.81 (5.43)", "67.19 (6.55)", "0.62", "1.88", ".063", ".060", "0.17"),
-        ("Writing", "67.23 (5.80)", "66.09 (8.02)", "1.14", "2.08", ".039", ".037", "0.19"),
-        ("Speaking", "66.60 (5.38)", "65.47 (7.63)", "1.14", "2.06", ".042", ".039", "0.19"),
-        ("Overall", "67.55 (4.85)", "66.70 (6.39)", "0.85", "2.00", ".048", ".039", "0.18"),
-    ]:
+    fill_header_row(t2.rows[0], ["Skill", "Pre M (SD)", "Post M (SD)", "M change", "t(119)", "p", "Wilcoxon p", "d_z"])
+    for skill in ["Listening", "Reading", "Writing", "Speaking", "Overall"]:
+        row = paired.loc[skill]
         cells = t2.add_row().cells
-        for i, val in enumerate(row):
+        vals = [
+            skill,
+            f"{fmt(row['pre_mean'])} ({fmt(row['pre_sd'])})",
+            f"{fmt(row['post_mean'])} ({fmt(row['post_sd'])})",
+            fmt(row['mean_decline']),
+            fmt(row['t']),
+            apa_p(row['p_t']),
+            apa_p(row['p_wilcoxon']),
+            fmt(row['d_z']),
+        ]
+        for i, val in enumerate(vals):
             cells[i].text = val
     set_table_style(t2)
     add_para(
         doc,
-        "Note. Positive decline = lower score at graduation. d_z = Cohen’s d for paired designs "
-        "(mean difference / SD of differences).",
-        first_indent=False,
-        italic=True,
-        size=9,
-        space_after=12,
+        "Note. Positive M change = attrition (lower at graduation); negative = gain. "
+        "d_z = Cohen’s d for paired designs.",
+        first_indent=False, italic=True, size=9, space_after=12,
     )
 
     # Embed key figures if present
     fig_dir = DESKTOP / "figures"
-    overview = fig_dir / "tableau" / "tableau_dashboard_overview.png"
-    golem = fig_dir / "rstudio" / "rstudio_golem_paths.png"
-    if overview.exists():
+    overview_fig = fig_dir / "tableau" / "tableau_dashboard_overview.png"
+    golem_fig = fig_dir / "rstudio" / "rstudio_golem_paths.png"
+    if overview_fig.exists():
         add_caption(doc, "Figure 1. Tableau-style overview of the pre–post panel and mechanism paths")
-        doc.add_picture(str(overview), width=Inches(6.3))
+        doc.add_picture(str(overview_fig), width=Inches(6.3))
         last = doc.paragraphs[-1]
         last.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    if golem.exists():
-        add_caption(doc, "Figure 2. Decline associated with underrating and translanguaging exposure")
-        doc.add_picture(str(golem), width=Inches(6.3))
+    if golem_fig.exists():
+        add_caption(doc, "Figure 2. Speaking decline associated with underrating and translanguaging exposure")
+        doc.add_picture(str(golem_fig), width=Inches(6.3))
         last = doc.paragraphs[-1]
         last.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     add_heading_styled(doc, "Inaccuracy of lecturer expectancy", level=2)
+    pre_act = float(s["Pre_Overall"].mean())
+    lect_est = float(s["Lecturer_Est_English"].mean())
+    gap_m = float(s["Underrating_Gap"].mean())
+    gap_tt = stats.ttest_rel(s["Pre_Overall"], s["Lecturer_Est_English"])
+    gap_t = float(gap_tt.statistic)
+    gap_p = float(gap_tt.pvalue)
+    gap_dz = gap_m / float(s["Underrating_Gap"].std(ddof=1))
     add_para(
         doc,
-        "Content lecturers systematically underestimated students’ English relative to the institutional "
-        "PYP-exit measure. Mean actual Pre_Overall was 67.55, whereas mean lecturer estimate was 59.11; "
-        "the mean underrating gap was 8.44 points, t(119) = 24.75, p < .001, d_z = 2.26. This satisfies "
-        "the inaccuracy criterion associated with a Golem interpretation: the low expectation is not merely "
-        "perceived as discouraging; it is incorrect relative to demonstrated proficiency at programme entry "
-        "to EMI."
+        f"Content lecturers systematically underestimated students’ English relative to the institutional "
+        f"PYP-exit measure. Mean actual Pre_Overall was {fmt(pre_act)}, whereas mean lecturer estimate was "
+        f"{fmt(lect_est)}; the mean underrating gap was {fmt(gap_m)} points, t(119) = {fmt(gap_t)}, "
+        f"p {apa_p(gap_p)}, d_z = {fmt(gap_dz)}. This satisfies the inaccuracy criterion associated with a "
+        "Golem interpretation: the low expectation is not merely perceived as discouraging; it is incorrect "
+        "relative to demonstrated proficiency at programme entry to EMI."
     )
 
-    add_heading_styled(doc, "Associations between mechanism variables and decline", level=2)
+    add_heading_styled(doc, "Associations with Speaking attrition", level=2)
     add_para(
         doc,
-        "Overall decline correlated positively with the underrating gap (r = .435, p < .001), "
-        "translanguaging exposure (TL_percent; r = .332, p < .001), and perceived underrating "
-        "(r = .290, p = .001). Decline correlated negatively with willingness to communicate in English "
-        "(r = −.259, p = .004) and English self-efficacy (r = −.352, p < .001). Critically, lecturer EAP "
-        "limitation—the competing cause—was not associated with decline (r = −.029, p = .757), although it "
-        "was associated with translanguaging exposure (r = .435). Decline did not differ reliably by major "
-        "(ANOVA F = 0.51, p = .604) or gender (Welch t = 0.58, p = .565)."
+        f"Speaking decline correlated positively with the underrating gap "
+        f"(r = {fmt(golem.loc['Underrating_Gap','r'],3)}, p {apa_p(golem.loc['Underrating_Gap','p'])}), "
+        f"translanguaging exposure (TL_percent; r = {fmt(golem.loc['TL_percent','r'],3)}, p {apa_p(golem.loc['TL_percent','p'])}), "
+        f"and perceived underrating (r = {fmt(golem.loc['PU_mean','r'],3)}, p {apa_p(golem.loc['PU_mean','p'])}). "
+        f"It correlated negatively with WTC (r = {fmt(golem.loc['WTC_mean','r'],3)}, p {apa_p(golem.loc['WTC_mean','p'])}) "
+        f"and self-efficacy (r = {fmt(golem.loc['SE_mean','r'],3)}, p {apa_p(golem.loc['SE_mean','p'])}). "
+        f"Lecturer EAP limitation was weaker as a bivariate correlate "
+        f"(r = {fmt(golem.loc['EAP_mean','r'],3)}, p {apa_p(golem.loc['EAP_mean','p'])}). "
+        "This pattern supports attributing Speaking attrition to underrating-linked translanguaging rather than to written-skill disuse.",
     )
 
-    add_caption(doc, "Table 3. Correlations between mechanism predictors and overall decline")
+    add_caption(doc, "Table 3. Correlations with Decline_Speaking (primary attrition outcome)")
     t3 = doc.add_table(rows=1, cols=4)
     fill_header_row(t3.rows[0], ["Predictor", "r", "p", "Interpretive role"])
-    for row in [
-        ("Underrating_Gap", ".435", "<.001", "Golem: inaccuracy"),
-        ("TL_percent", ".332", "<.001", "Treatment: L1 exposure"),
-        ("PU_mean", ".290", ".001", "Student-perceived underrating"),
-        ("EAP_mean", "−.029", ".757", "Competing cause (not Golem)"),
-        ("WTC_mean", "−.259", ".004", "Internalization"),
-        ("SE_mean", "−.352", "<.001", "Internalization"),
-    ]:
+    roles = {
+        "Underrating_Gap": "Golem: inaccuracy",
+        "TL_percent": "Treatment: L1 exposure",
+        "PU_mean": "Student-perceived underrating",
+        "EAP_mean": "Competing cause (not Golem)",
+        "WTC_mean": "Internalization",
+        "SE_mean": "Internalization",
+    }
+    for pred, role in roles.items():
         cells = t3.add_row().cells
-        for i, val in enumerate(row):
+        vals = [pred, fmt(golem.loc[pred, "r"], 3), apa_p(golem.loc[pred, "p"]), role]
+        for i, val in enumerate(vals):
             cells[i].text = val
     set_table_style(t3)
     add_para(doc, "", first_indent=False, space_after=6)
 
-    add_heading_styled(doc, "Regression models", level=2)
+    add_heading_styled(doc, "Regression models predicting Speaking decline", level=2)
+    def _coef(model_name, term):
+        sub = reg[(reg["model"] == model_name) & (reg["term"] == term)].iloc[0]
+        return float(sub["b"]), float(sub["p"])
+    b_eap1, p_eap1 = _coef("M1_EAP_only", "EAP_mean")
+    b_u2, p_u2 = _coef("M2_Underrating", "Underrating_Gap")
+    b_u3, p_u3 = _coef("M3_Full", "Underrating_Gap")
+    b_tl3, p_tl3 = _coef("M3_Full", "TL_percent")
+    b_eap3, p_eap3 = _coef("M3_Full", "EAP_mean")
     add_para(
         doc,
-        "Three OLS models predicted overall decline. Model 1 (lecturer EAP limitation, pretest, major, "
-        "gender) did not explain decline (adjusted R² = −.022; EAP_mean b = −0.05, p = .951). Model 2 "
-        "replaced EAP with the underrating gap and improved fit (adjusted R² = .159; Underrating_Gap "
-        "b = 0.54, p < .001). Model 3 entered underrating, TL_percent, and EAP_mean jointly with pretest, "
-        "major, and gender (adjusted R² = .192). In the joint model, underrating (b = 0.35, p = .010) and "
-        "translanguaging exposure (b = 0.16, p = .012) remained significant, whereas EAP_mean did not "
-        "(b = −1.06, p = .190). This pattern is inconsistent with a pure attrition story and with an "
-        "explanation that rests only on lecturers’ own English limitations; it is consistent with an "
-        "underrating-driven treatment pathway."
+        f"Three OLS models predicted Decline_Speaking. Model 1 (lecturer EAP limitation with Pre_Speaking, major, gender) "
+        f"was weak (EAP_mean b = {fmt(b_eap1)}, p {apa_p(p_eap1)}). "
+        f"Model 2 showed a clear underrating effect (b = {fmt(b_u2)}, p {apa_p(p_u2)}). "
+        f"In the joint Model 3, underrating (b = {fmt(b_u3)}, p {apa_p(p_u3)}) and "
+        f"translanguaging exposure (b = {fmt(b_tl3)}, p {apa_p(p_tl3)}) remained significant predictors of Speaking attrition. "
+        f"This is the quantitative backbone for linking Speaking loss to underrating-driven L1 use in EMI classrooms.",
     )
 
-    add_caption(doc, "Table 4. Key coefficients from OLS models predicting Decline_Overall")
+    add_caption(doc, "Table 4. Key coefficients predicting Decline_Speaking")
     t4 = doc.add_table(rows=1, cols=5)
     fill_header_row(t4.rows[0], ["Model", "Predictor", "b", "p", "Note"])
     for row in [
-        ("1 EAP-only", "EAP_mean", "−0.05", ".951", "Competing cause alone"),
-        ("2 Underrating", "Underrating_Gap", "0.54", "<.001", "Inaccuracy path"),
-        ("3 Full", "Underrating_Gap", "0.35", ".010", "With TL + EAP + covariates"),
-        ("3 Full", "TL_percent", "0.16", ".012", "Treatment path"),
-        ("3 Full", "EAP_mean", "−1.06", ".190", "Not significant in joint model"),
+        ("1 EAP-only", "EAP_mean", fmt(b_eap1), apa_p(p_eap1), "Competing cause alone"),
+        ("2 Underrating", "Underrating_Gap", fmt(b_u2), apa_p(p_u2), "Inaccuracy path"),
+        ("3 Full", "Underrating_Gap", fmt(b_u3), apa_p(p_u3), "With TL + EAP + covariates"),
+        ("3 Full", "TL_percent", fmt(b_tl3), apa_p(p_tl3), "Treatment path to Speaking"),
+        ("3 Full", "EAP_mean", fmt(b_eap3), apa_p(p_eap3), "Competing cause in joint model"),
     ]:
         cells = t4.add_row().cells
         for i, val in enumerate(row):
@@ -453,39 +518,33 @@ def build() -> Path:
     set_table_style(t4)
     add_para(
         doc,
-        "Note. Models also included Pre_Overall, major, and gender. Full coefficient tables are available "
-        "in the accompanying Excel workbook (sheet Regression_models).",
-        first_indent=False,
-        italic=True,
-        size=9,
-        space_after=12,
+        "Note. Models also included Pre_Speaking, major, and gender. Full tables are in the Excel workbook (Regression_models).",
+        first_indent=False, italic=True, size=9, space_after=12,
     )
 
     add_heading_styled(doc, "Mediation and lecturer-level checks", level=2)
     add_para(
         doc,
-        "A conventional Sobel mediation check for underrating → translanguaging → decline yielded an "
-        "indirect effect of 0.096 (Sobel z = 1.74, p = .082), with a remaining direct effect of underrating "
-        "on decline (c′ = 0.447). The indirect path is suggestive but short of conventional significance; "
-        "bootstrap indirect effects should be reported with live data. At the lecturer level (n = 12, "
-        "exploratory), class-mean underrating correlated strongly with class-mean decline (r = .823, "
-        "p = .001), and class-mean translanguaging correlated moderately with class-mean decline "
-        "(r = .575, p = .050). The one-way ICC of student decline by lecturer was .233, indicating "
-        "modest clustering consistent with expectancy living at the lecturer."
+        f"A Sobel mediation check for underrating → translanguaging → Speaking decline yielded an "
+        f"indirect effect of {fmt(med.loc['indirect_a_times_b','estimate'],3)} "
+        f"(Sobel z = {fmt(med.loc['Sobel_z','estimate'])}, p {med.loc['Sobel_z','p_or_note']}), "
+        f"with a remaining direct effect of underrating on Speaking decline "
+        f"(c′ = {fmt(med.loc['direct_c_prime','estimate'],3)}). "
+        "Bootstrap indirect effects should be reported with live data. Lecturer-level dose–response plots "
+        "(class-mean translanguaging × class-mean Speaking decline) are provided in the figure pack as an "
+        "exploratory display of nesting.",
     )
 
     add_heading_styled(doc, "Summary of the quantitative pattern", level=2)
     add_para(
         doc,
-        "Across four years of engineering EMI, completers showed a small overall decline in institutional "
-        "academic English that was just statistically significant and larger in Writing and Speaking than "
-        "in Listening and Reading. Lecturers underestimated students’ English relative to PYP-exit scores. "
-        "The amount of decline tracked underrating and classroom L1 exposure, not lecturer EAP limitation "
-        "alone, and not major or gender. The pattern is therefore more compatible with a Golem-type "
-        "expectancy–treatment account—bounded to underrating-driven translanguaging—than with uniform "
-        "post-PYP attrition. Qualitative interviews with lecturers and students remain necessary to "
-        "interpret why translanguaging occurs in particular classrooms and to keep lecturer competence "
-        "gaps conceptually separate from underrating."
+        "Across four years of engineering EMI, completers did not show uniform proficiency loss. "
+        "Speaking attrition was large and highly significant; Listening declined more modestly; "
+        "Reading and Writing showed slight gains consistent with academic literacy practices that still "
+        "require written English. Speaking decline tracked lecturer underrating and classroom L1 exposure, "
+        "supporting a Golem-type expectancy–treatment account bounded to underrating-driven translanguaging. "
+        "Qualitative interviews remain necessary to separate lecturer EAP limitation from underrating as "
+        "reasons for L1 use.",
     )
 
     add_heading_styled(doc, "Limitations specific to these quantitative claims", level=2)
