@@ -34,11 +34,16 @@ If underrating and translanguaging predict how much a student drops, *after* con
 - `PSYCHOMETRIC_REPORT.md` — full statistical write-up
 - `HOW_WE_TEST_GOLEM.md` — mechanism (e) in plain language
 - `build_dataset.py` — generator (re-runnable; calibrated random seed)
-- `outputs/` — CSV extracts and figures
+- `make_styled_figures.py` — Tableau-style dashboards + ggplot2/RStudio-style plots
+- `FIGURES.md` — index of illustration files
+- `outputs/tableau/` — dashboard-style PNGs
+- `outputs/rstudio/` — ggplot2-look PNGs
+- `outputs/` — CSV extracts and earlier simple figures
 
 ## Rebuild
 
 ```bash
 python -m pip install -r requirements.txt
 python build_dataset.py
+python make_styled_figures.py
 ```

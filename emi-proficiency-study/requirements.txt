@@ -4,3 +4,6 @@ scipy>=1.11
 openpyxl>=3.1
 statsmodels>=0.14
 matplotlib>=3.8
+seaborn>=0.13
+plotnine>=0.14
+pillow>=10.0
