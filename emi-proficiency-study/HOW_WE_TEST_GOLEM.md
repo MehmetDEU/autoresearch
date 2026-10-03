@@ -45,10 +45,10 @@ Pure attrition predicts a **similar** drop for everyone (or a drop that only tra
 
 Golem predicts **heterogeneous** drop:
 
-- students whose lecturers underestimate them more → larger decline
-- students in higher-translanguaging classes → larger decline
-- Writing/Speaking decline more than Listening/Reading
-- lecturer EAP-gap predicts translanguaging, but once underrating and translanguaging are in the model, EAP-gap should **not** remain the main predictor of decline
+- students whose lecturers underestimate them more → larger **Speaking** decline
+- students in higher-translanguaging classes → larger **Speaking** decline
+- Speaking attrition dominates; Listening declines modestly; Reading/Writing show little loss or slight gains
+- lecturer EAP-gap predicts translanguaging, but once underrating and translanguaging are in the model, EAP-gap should **not** remain the main predictor of Speaking decline
 
 That is why the Excel file includes, for every student:
 
@@ -62,9 +62,9 @@ That is why the Excel file includes, for every student:
 Primary quantitative tests for mechanism (e):
 
 1. Paired *t*: `Pre_Overall` vs `Lecturer_Est_English` — lecturers underestimate.
-2. Pearson / regression: `Decline_Overall` ~ `Underrating_Gap` + `TL_percent` + `EAP_mean` + covariates.
-3. Mediation (Baron & Kenny / Sobel): underrating → translanguaging → decline.
-4. Skill pattern: larger paired effects for Writing and Speaking than for Listening and Reading.
+2. Pearson / regression: `Decline_Speaking` ~ `Underrating_Gap` + `TL_percent` + `EAP_mean` + covariates.
+3. Mediation (Baron & Kenny / Sobel): underrating → translanguaging → Speaking decline.
+4. Skill pattern: Speaking ≫ Listening attrition; Reading/Writing near zero or slight gains.
 
 Qualitative interviews (your existing lecturer/student data) then interpret *why* a given lecturer translanguages — underrating vs own EAP gap — so the two paths are not collapsed in the write-up.
 
