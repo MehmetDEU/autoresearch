@@ -9,8 +9,25 @@ Institutional skill and overall scores are on a **0–100** scale. The Preparato
 
 ## Publication figures (`outputs/figures/`)
 
-1. `fig1_skill_mean_decline.png` — mean pre−post change by skill with 95% CI (oral–aural decline vs non-significant written change).
-2. `fig2_golem_speaking_paths.png` — Speaking decline associated with underrating gap and translanguaging exposure.
+1. `fig1_skill_mean_decline.png` — **grouped Pre vs Post mean scores** by skill (with 95% CI). Listening/Speaking post bars are lower; Reading/Writing are not. Signed-difference bars were retired because readers misread + as gain.
+2. `fig2_golem_speaking_paths.png` — **Listening + Speaking** decline × underrating / translanguaging (2×2; RStudio ggplot preferred).
+   Companion: `outputs/rstudio/fig2_all_skills_paths_ggplot.png` shows all four skills (Reading/Writing flat).
+
+## Styled companions (Tableau + RStudio)
+
+### Tableau-style PNGs + CSVs (`outputs/tableau/`)
+
+- `fig1_skill_prepost_tableau_style.png`
+- `fig2_golem_paths_tableau_style.png`
+- `fig1_skill_prepost_tableau.csv` / `fig1_skill_prepost_wide_tableau.csv`
+- `fig2_golem_paths_tableau.csv`
+
+### RStudio / ggplot2 (`rstudio/fig1_and_fig2_styled.R`)
+
+- `outputs/rstudio/fig1_skill_prepost_ggplot.png`
+- `outputs/rstudio/fig2_golem_paths_ggplot.png`
+
+Publication Figure 2 remains the two-panel **scatter**.
 
 ## Tables (not figured)
 
@@ -24,8 +41,9 @@ Optional exploratory dashboards (not for the paper):
 python make_styled_figures.py --archive
 ```
 
-Rebuild publication figures:
+Rebuild publication + styled companions:
 
 ```bash
 python make_styled_figures.py
+Rscript rstudio/fig1_and_fig2_styled.R
 ```

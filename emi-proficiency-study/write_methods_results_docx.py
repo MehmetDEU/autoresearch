@@ -627,17 +627,19 @@ def build() -> Path:
     )
 
     # Figure 1 only
-    fig1 = DESKTOP / "figures" / "fig1_skill_mean_decline.png"
+    fig1 = ROOT / "outputs" / "rstudio" / "fig1_skill_prepost_ggplot.png"
+    if not fig1.exists():
+        fig1 = DESKTOP / "figures" / "fig1_skill_mean_decline.png"
     if not fig1.exists():
         fig1 = ROOT / "outputs" / "figures" / "fig1_skill_mean_decline.png"
     if fig1.exists():
         add_figure_caption(
             doc,
             "Figure 1",
-            "Mean pre–post change by skill with 95% confidence intervals (points on the 0–100 institutional scale).",
-            note="Positive values indicate attrition. Listening and Speaking (oral–aural) decline significantly; "
-            "Reading and Writing do not. PYP pass threshold = 60. Error bars are 95% CIs for mean differences "
-            "(Nicol & Pexman, 2010b).",
+            "Mean Pre (PYP exit) and Post (graduation) scores by skill with 95% confidence intervals of the mean (points on the 0–100 institutional scale). Listening and Speaking decline; Reading and Writing do not decline significantly. PYP pass threshold = 60.",
+            note="Grouped Pre vs Post bars (ggplot2 / RStudio). Listening and Speaking (oral–aural) decline "
+            "significantly; Reading and Writing do not. PYP pass threshold = 60. Error bars are 95% CIs of "
+            "the mean (Nicol & Pexman, 2010b).",
         )
         doc.add_picture(str(fig1), width=Inches(5.9))
         doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -717,19 +719,22 @@ def build() -> Path:
         "Play-It-Safe practice of reporting M, SD, and r. *p < .05. **p < .01. ***p < .001.",
     )
 
-    fig2 = DESKTOP / "figures" / "fig2_golem_speaking_paths.png"
+    fig2 = ROOT / "outputs" / "rstudio" / "fig2_golem_paths_ggplot.png"
+    if not fig2.exists():
+        fig2 = DESKTOP / "figures" / "fig2_golem_speaking_paths.png"
     if not fig2.exists():
         fig2 = ROOT / "outputs" / "figures" / "fig2_golem_speaking_paths.png"
     if fig2.exists():
         add_figure_caption(
             doc,
             "Figure 2",
-            "Speaking decline associated with lecturer underrating (A) and translanguaging exposure (B).",
-            note="Speaking change is in points on the 0–100 scale (pre − post). Fitted lines are OLS "
-            "with 95% confidence bands. Multipanel layout follows Displaying Your Findings conventions "
-            "for related scatterplots (Nicol & Pexman, 2010b).",
+            "Oral–aural attrition paths: Listening (A–B) and Speaking (C–D) decline associated with lecturer underrating and translanguaging exposure.",
+            note="Decline is in points on the 0–100 scale (pre − post; positive = attrition). "
+            "Fitted lines are OLS with 95% confidence bands. Reading and Writing show near-zero "
+            "associations (supplementary all-skills panel). Multipanel layout follows Displaying Your "
+            "Findings conventions for related scatterplots (Nicol & Pexman, 2010b).",
         )
-        doc.add_picture(str(fig2), width=Inches(6.1))
+        doc.add_picture(str(fig2), width=Inches(6.2))
         doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     # --- Regression Play-It-Safe ---
