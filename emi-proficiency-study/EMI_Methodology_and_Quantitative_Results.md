@@ -114,9 +114,9 @@ Paired-Samples Comparisons of Pretest and Posttest Skill Scores (N = 120)
 
 Note. Scores are out of 100. PYP pass threshold = 60 (≈ CEFR B1); all completers scored ≥ 60 at pretest. Mdiff = Pre − Post (positive = attrition; negative = gain). d_z = Cohen’s d for paired designs. 95% CIs for mean differences are reported in the Excel workbook (Paired_pre_post). Wilcoxon signed-rank p values were consistent with the paired t conclusions. *p < .05. **p < .01. ***p < .001.
 
-Figure 1. Mean pre–post change by skill with 95% confidence intervals (points on the 0–100 institutional scale).
+Figure 1. Mean Pre (PYP exit) and Post (graduation) scores by skill with 95% confidence intervals of the mean (points on the 0–100 institutional scale).
 
-Note. Positive values indicate attrition. Listening and Speaking (oral–aural) decline significantly; Reading and Writing do not. PYP pass threshold = 60. Error bars are 95% CIs for mean differences (Nicol & Pexman, 2010b).
+Note. Grouped bars show Pre vs Post. Listening and Speaking (oral–aural) decline significantly; Reading and Writing do not. PYP pass threshold = 60. Error bars are 95% CIs of the mean (Nicol & Pexman, 2010b).
 
 ## Inaccuracy of lecturer expectancy (RQ2)
 
