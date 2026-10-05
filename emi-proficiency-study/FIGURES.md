@@ -1,49 +1,26 @@
-# Figures (publication set)
+# Figures (publication set — quantitative strand)
 
-Only figures that carry a primary inferential claim are retained for the manuscript.
-All other results are reported in tables.
+Only **Figure 1** is retained for the quantitative manuscript (RQ1).
+
+Explanatory paths (translanguaging, underrating, etc.) belong to the **qualitative** strand (RQ2–RQ3) and are not figured statistically here.
 
 ## Scale
 
-Institutional skill and overall scores are on a **0–100** scale. The Preparatory Year Programme pass threshold is **60/100** (interpreted as CEFR B1).
+Institutional skill and overall scores are on a **0–100** scale.  
+PYP pass threshold = **60/100** (≈ CEFR B1).
 
-## Publication figures (`outputs/figures/`)
+## Publication figure
 
-1. `fig1_skill_mean_decline.png` — **grouped Pre vs Post mean scores** by skill (with 95% CI). Listening/Speaking post bars are lower; Reading/Writing are not. Signed-difference bars were retired because readers misread + as gain.
-2. `fig2_golem_speaking_paths.png` — **Listening + Speaking** decline × underrating / translanguaging (2×2; RStudio ggplot preferred).
-   Companion: `outputs/rstudio/fig2_all_skills_paths_ggplot.png` shows all four skills (Reading/Writing flat).
+1. `outputs/rstudio/fig1_skill_prepost_ggplot.png` (preferred) — grouped Pre vs Post means by skill with 95% CI.  
+   Listening/Speaking decline; Reading/Writing do not.
 
-## Styled companions (Tableau + RStudio)
+Copied to `outputs/figures/fig1_skill_mean_decline.png` for the Word draft.
 
-### Tableau-style PNGs + CSVs (`outputs/tableau/`)
-
-- `fig1_skill_prepost_tableau_style.png`
-- `fig2_golem_paths_tableau_style.png`
-- `fig1_skill_prepost_tableau.csv` / `fig1_skill_prepost_wide_tableau.csv`
-- `fig2_golem_paths_tableau.csv`
-
-### RStudio / ggplot2 (`rstudio/fig1_and_fig2_styled.R`)
-
-- `outputs/rstudio/fig1_skill_prepost_ggplot.png`
-- `outputs/rstudio/fig2_golem_paths_ggplot.png`
-
-Publication Figure 2 remains the two-panel **scatter**.
-
-## Tables (not figured)
-
-- Descriptives, paired *t*/Wilcoxon by skill, reliability/ICC/IELTS validity
-- Correlations with Speaking decline, OLS coefficients, mediation quantities
-- Sample composition and lecturer-level exploratory summaries
-
-Optional exploratory dashboards (not for the paper):
+## Rebuild
 
 ```bash
-python make_styled_figures.py --archive
+Rscript rstudio/fig1_and_fig2_styled.R   # Fig 1 (+ optional archive scatters)
+python write_methods_results_docx.py
 ```
 
-Rebuild publication + styled companions:
-
-```bash
-python make_styled_figures.py
-Rscript rstudio/fig1_and_fig2_styled.R
-```
+Optional archive scatters under `outputs/rstudio/` are **not** part of the current quantitative RQs.

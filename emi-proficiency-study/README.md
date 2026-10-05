@@ -1,54 +1,29 @@
-# EMI four-year proficiency panel (synthetic)
+# EMI proficiency study (explanatory mixed methods)
 
-**This workbook is simulated student data** for testing the scoring design, SPSS/R workflow, and the Golem-mechanism analysis. It is **not** a real institutional dataset. Replace it with live scores before any journal submission.
+**Design.** QUANT → QUAL (explanatory sequential).  
+**Quantitative (now):** RQ1 — paired Pre (PYP exit) vs Post (graduation) proficiency.  
+**Qualitative (next):** RQ2–RQ3 — lecturer and student accounts of translanguaging / EMI language practice explaining oral–aural attrition.
 
-## What you asked for
+See `RESEARCH_QUESTIONS.md`.
 
-| Requirement | How it is implemented |
-|---|---|
-| N = 120 PYP completers | Sheet `Students` |
-| Pretest = PYP exit; posttest = graduation after 4 EMI years | `Pre_*` / `Post_*` |
-| IELTS Academic alignment | Four skills; public IELTS Writing/Speaking criteria |
-| Pass threshold 60 = CEFR B1 | Every `Pre_Overall` ≥ 60; pretest mean is in the mid-60s |
-| ~68% male; ages 22–25 at graduation | 82 male / 38 female; `Age_at_post_graduation` 22–25 and `Age_at_pre_PYP_exit` = age − 4 |
-| Balanced engineering majors | 40 Mechanical, 40 Chemical, 40 Electrical-Electronics |
-| Two PYP instructors + you as expert | Sheets `Writing_*_raters`, `Speaking_*_raters`; ICC reported |
-| Slightly significant pre/post change | **Paired** *t*-test (not independent-samples); p ≈ .05 |
-| Psychometrics | Descriptives, Shapiro–Wilk, skew/kurtosis, α, ω, ICC, concurrent IELTS *r* |
-| Validity vs IELTS website samples | 36-student subsample sat ielts.org Academic practice tests |
+## Quantitative files
 
-## How we test Golem rather than “English just rusted”
+| File | Role |
+| --- | --- |
+| `EMI_quantitative_prepost_N120.xlsx` | Slim primary quant workbook (Pre/Post + paired tests) |
+| `EMI_PYP_pre_post_synthetic_N120.xlsx` | Same slim panel (compatibility path for scripts) |
+| `EMI_PYP_pre_post_FULL_ARCHIVE_with_mechanism.xlsx` | Archived fuller synthetic panel (not used in RQ1) |
+| `EMI_Methodology_and_Quantitative_Results.docx` / `.md` | Methods + RQ1 results |
+| `outputs/rstudio/fig1_skill_prepost_ggplot.png` | Figure 1 (preferred) |
 
-Read `HOW_WE_TEST_GOLEM.md`. Short version: decline is **heterogeneous** and tracks
-
-1. **Inaccuracy** — `Underrating_Gap` = actual PYP score − lecturer’s estimate  
-2. **Treatment** — `TL_percent` (share of content-course time in Turkish)  
-3. **Internalization** — `WTC_mean`, `SE_mean`  
-4. **Not Golem** — `EAP_mean` (lecturer’s own English limitation) is a control
-
-If underrating and translanguaging predict how much a student drops, *after* controlling for pretest, major, gender, and lecturer EAP-gap, attrition-alone is not a sufficient explanation.
-
-## Files
-
-- `EMI_PYP_pre_post_synthetic_N120.xlsx` — main deliverable (19 sheets)
-- `PSYCHOMETRIC_REPORT.md` — full statistical write-up
-- `HOW_WE_TEST_GOLEM.md` — mechanism (e) in plain language
-- `build_dataset.py` — generator (re-runnable; calibrated random seed)
-- `make_styled_figures.py` — publication figures only (use `--archive` for exploratory extras)
-- `FIGURES.md` — which two figures to keep and why
-- `outputs/figures/` — **Figure 1** skill mean change; **Figure 2** Golem paths
-- `EMI_Methodology_and_Quantitative_Results.docx` — Methodology + Quantitative Results draft
-
-**Scale reminder:** all skill/overall scores are **out of 100**; the PYP pass threshold is **60** (≈ CEFR B1). That note appears on tables and figure captions.
-
-Everything else (descriptives, paired tests, reliability, correlations, OLS, mediation) stays in **tables**, not extra plots.
-
-CSV extracts remain under `outputs/` (`students.csv`, `lecturers.csv`, `ielts_subsample.csv`).
-
-## Rebuild
+## Rebuild quant
 
 ```bash
-python -m pip install -r requirements.txt
-python build_dataset.py
-python make_styled_figures.py
+python reform_quantitative.py
+Rscript rstudio/fig1_and_fig2_styled.R
+python write_methods_results_docx.py
 ```
+
+## Scale
+
+0–100 institutional scores; PYP pass threshold = 60 (≈ CEFR B1).

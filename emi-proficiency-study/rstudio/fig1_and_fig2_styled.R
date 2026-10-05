@@ -1,7 +1,6 @@
 #!/usr/bin/env Rscript
-# Stylish ggplot2 / RStudio figures for the EMI manuscript
-#   Figure 1 — grouped Pre vs Post skill means
-#   Figure 2 — Speaking decline scatters (underrating + translanguaging)
+# Figure 1 only — Pre vs Post skill means (ggplot2 / RStudio)
+# Matches RQ1 quantitative strand (paired proficiency comparison).
 #
 # Usage (from emi-proficiency-study/):
 #   Rscript rstudio/fig1_and_fig2_styled.R
@@ -9,24 +8,31 @@
 suppressPackageStartupMessages({
   library(readxl)
   library(dplyr)
-  library(tidyr)
   library(ggplot2)
 })
 
-root <- if (file.exists("EMI_PYP_pre_post_synthetic_N120.xlsx")) {
+root <- if (file.exists("EMI_quantitative_prepost_N120.xlsx") ||
+             file.exists("EMI_PYP_pre_post_synthetic_N120.xlsx")) {
   normalizePath(".")
-} else if (file.exists("../EMI_PYP_pre_post_synthetic_N120.xlsx")) {
+} else if (file.exists("../EMI_quantitative_prepost_N120.xlsx") ||
+           file.exists("../EMI_PYP_pre_post_synthetic_N120.xlsx")) {
   normalizePath("..")
 } else {
   stop("Run from emi-proficiency-study/ or rstudio/")
 }
 
-xlsx <- file.path(root, "EMI_PYP_pre_post_synthetic_N120.xlsx")
+xlsx <- if (file.exists(file.path(root, "EMI_quantitative_prepost_N120.xlsx"))) {
+  file.path(root, "EMI_quantitative_prepost_N120.xlsx")
+} else {
+  file.path(root, "EMI_PYP_pre_post_synthetic_N120.xlsx")
+}
+
 students <- read_excel(xlsx, sheet = "Students")
 outdir <- file.path(root, "outputs", "rstudio")
 dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
+pub <- file.path(root, "outputs", "figures")
+dir.create(pub, recursive = TRUE, showWarnings = FALSE)
 
-# Shared theme -----------------------------------------------------------------
 theme_emi <- function(base_size = 11) {
   theme_minimal(base_size = base_size, base_family = "sans") %+replace%
     theme(
@@ -43,13 +49,10 @@ theme_emi <- function(base_size = 11) {
       legend.title = element_blank(),
       plot.background = element_rect(fill = "#F7F9FB", colour = NA),
       panel.background = element_rect(fill = "white", colour = NA),
-      strip.text = element_text(face = "bold", colour = "#1B1F24", size = base_size),
-      strip.background = element_rect(fill = "#EEF1F4", colour = NA),
       plot.margin = margin(12, 14, 10, 12)
     )
 }
 
-# Figure 1 ----------------------------------------------------------------------
 skills <- c("Listening", "Reading", "Writing", "Speaking", "Overall")
 ci95 <- function(x) {
   se <- sd(x) / sqrt(length(x))
@@ -64,11 +67,8 @@ rows <- lapply(skills, function(sk) {
   tt <- t.test(pre, post, paired = TRUE)
   cp <- ci95(pre); cq <- ci95(post)
   delta <- mean(pre - post)
-  fam <- if (sk %in% c("Listening", "Speaking")) "Oral–aural"
-         else if (sk %in% c("Reading", "Writing")) "Written" else "Overall"
   data.frame(
     Skill = sk,
-    Family = fam,
     Time = factor(c("Pre (PYP exit)", "Post (graduation)"),
                   levels = c("Pre (PYP exit)", "Post (graduation)")),
     Mean = c(mean(pre), mean(post)),
@@ -81,10 +81,9 @@ rows <- lapply(skills, function(sk) {
 })
 long <- bind_rows(rows)
 long$Skill <- factor(long$Skill, levels = skills)
-long$Family <- factor(long$Family, levels = c("Oral–aural", "Written", "Overall"))
 
 ann <- long %>%
-  group_by(Skill, Family) %>%
+  group_by(Skill) %>%
   summarise(
     y = max(hi) + 0.9,
     Delta = first(Delta),
@@ -117,142 +116,14 @@ p1 <- ggplot(long, aes(x = Skill, y = Mean, fill = Time)) +
   coord_cartesian(ylim = c(55, max(long$hi) + 5)) +
   labs(
     title = "Figure 1. Mean Pre and Post scores by skill (N = 120)",
-    subtitle = "ggplot2 / RStudio  ·  Listening & Speaking decline; Reading & Writing do not  ·  95% CI  ·  threshold = 60",
+    subtitle = "RQ1 · Listening & Speaking decline; Reading & Writing do not · 95% CI · threshold = 60",
     x = NULL, y = "Mean score (0–100 institutional scale)",
-    caption = "SYNTHETIC panel for manuscript scaffolding", fill = NULL
+    caption = "Quantitative strand only (explanatory mixed methods QUANT → QUAL)", fill = NULL
   ) +
   theme_emi()
 
-ggsave(file.path(outdir, "fig1_skill_prepost_ggplot.png"), p1,
-       width = 9.6, height = 6.0, dpi = 180, bg = "#F7F9FB")
-message("Wrote fig1_skill_prepost_ggplot.png")
-
-# Figure 2 — oral–aural scatters (Listening + Speaking) ----------------------------
-mk_panel <- function(skill, pred_name, pred_vals, letter) {
-  data.frame(
-    Skill = skill,
-    Predictor_name = pred_name,
-    Panel = paste0(letter, ". ", skill, "  ·  ", pred_name),
-    Predictor = pred_vals,
-    Decline = students[[paste0("Decline_", skill)]],
-    stringsAsFactors = FALSE
-  )
-}
-
-long2 <- bind_rows(
-  mk_panel("Listening", "Underrating gap", students$Underrating_Gap, "A"),
-  mk_panel("Listening", "Translanguaging %", students$TL_percent, "B"),
-  mk_panel("Speaking", "Underrating gap", students$Underrating_Gap, "C"),
-  mk_panel("Speaking", "Translanguaging %", students$TL_percent, "D")
-)
-long2$Skill <- factor(long2$Skill, levels = c("Listening", "Speaking"))
-long2$Predictor_name <- factor(long2$Predictor_name,
-                               levels = c("Underrating gap", "Translanguaging %"))
-long2$Panel <- factor(long2$Panel, levels = unique(long2$Panel))
-
-stats_lab <- long2 %>%
-  group_by(Panel, Skill, Predictor_name) %>%
-  summarise(
-    r = cor(Predictor, Decline),
-    p = cor.test(Predictor, Decline)$p.value,
-    .groups = "drop"
-  ) %>%
-  mutate(
-    label = ifelse(p < 0.001, sprintf("r = %.2f, p < .001", r),
-                   sprintf("r = %.2f, p = %.3f", r, p)),
-    x = -Inf, y = Inf
-  )
-
-p2 <- ggplot(long2, aes(Predictor, Decline)) +
-  geom_hline(yintercept = 0, linetype = "dotted", colour = "#8A949E", linewidth = 0.55) +
-  geom_point(aes(colour = Skill), alpha = 0.55, size = 2.0, stroke = 0.15, shape = 16) +
-  geom_smooth(method = "lm", formula = y ~ x, colour = "#C0392B",
-              fill = "#E8B4B0", alpha = 0.35, linewidth = 1.0, se = TRUE) +
-  geom_label(
-    data = stats_lab, aes(x = x, y = y, label = label),
-    inherit.aes = FALSE, hjust = -0.04, vjust = 1.15, size = 2.7,
-    fontface = "bold", fill = "white", label.size = 0.15, colour = "#1B1F24"
-  ) +
-  facet_wrap(~ Panel, scales = "free_x", nrow = 2) +
-  scale_colour_manual(values = c(Listening = "#3D6F9C", Speaking = "#E08A2E"), guide = "none") +
-  labs(
-    title = "Figure 2. Oral–aural attrition paths: Listening and Speaking",
-    subtitle = paste(
-      "ggplot2 / RStudio  ·  rows = skill; columns = underrating vs translanguaging",
-      "·  positive = attrition (pre − post)  ·  95% CI band  ·  N = 120"
-    ),
-    x = "Predictor", y = "Skill decline (pre − post; 0–100 scale)",
-    caption = "Reading/Writing associations are near zero (see companion all-skills figure). SYNTHETIC panel."
-  ) +
-  theme_emi(base_size = 10.5)
-
-ggsave(file.path(outdir, "fig2_golem_paths_ggplot.png"), p2,
-       width = 10.8, height = 8.2, dpi = 180, bg = "#F7F9FB")
-message("Wrote fig2_golem_paths_ggplot.png")
-
-# Companion: all four skills × two predictors (archive / supplement)
-long_all <- bind_rows(lapply(c("Listening", "Reading", "Writing", "Speaking"), function(sk) {
-  bind_rows(
-    data.frame(
-      Skill = sk,
-      Predictor_name = "Underrating gap",
-      Predictor = students$Underrating_Gap,
-      Decline = students[[paste0("Decline_", sk)]]
-    ),
-    data.frame(
-      Skill = sk,
-      Predictor_name = "Translanguaging %",
-      Predictor = students$TL_percent,
-      Decline = students[[paste0("Decline_", sk)]]
-    )
-  )
-}))
-long_all$Skill <- factor(long_all$Skill, levels = c("Listening", "Reading", "Writing", "Speaking"))
-long_all$Predictor_name <- factor(long_all$Predictor_name,
-                                  levels = c("Underrating gap", "Translanguaging %"))
-
-stats_all <- long_all %>%
-  group_by(Skill, Predictor_name) %>%
-  summarise(
-    r = cor(Predictor, Decline),
-    p = cor.test(Predictor, Decline)$p.value,
-    .groups = "drop"
-  ) %>%
-  mutate(
-    label = ifelse(p < 0.001, sprintf("r = %.2f***", r),
-            ifelse(p < 0.01, sprintf("r = %.2f**", r),
-            ifelse(p < 0.05, sprintf("r = %.2f*", r), sprintf("r = %.2f", r)))),
-    x = -Inf, y = Inf
-  )
-
-p_all <- ggplot(long_all, aes(Predictor, Decline)) +
-  geom_hline(yintercept = 0, linetype = "dotted", colour = "#8A949E", linewidth = 0.45) +
-  geom_point(colour = "#3D6F9C", alpha = 0.4, size = 1.5) +
-  geom_smooth(method = "lm", formula = y ~ x, colour = "#C0392B",
-              fill = "#E8B4B0", alpha = 0.3, linewidth = 0.85, se = TRUE) +
-  geom_text(
-    data = stats_all, aes(x = x, y = y, label = label),
-    inherit.aes = FALSE, hjust = -0.05, vjust = 1.4, size = 2.5,
-    fontface = "bold", colour = "#1B1F24"
-  ) +
-  facet_grid(Skill ~ Predictor_name, scales = "free_x") +
-  labs(
-    title = "Supplement. Decline × underrating / translanguaging for all four skills",
-    subtitle = "Only Listening and Speaking show reliable positive slopes; Reading/Writing are flat  ·  N = 120",
-    x = "Predictor", y = "Decline (pre − post)",
-    caption = "ggplot2 / RStudio companion (not required for the main manuscript)"
-  ) +
-  theme_emi(base_size = 10)
-
-ggsave(file.path(outdir, "fig2_all_skills_paths_ggplot.png"), p_all,
-       width = 10.5, height = 9.5, dpi = 170, bg = "#F7F9FB")
-message("Wrote fig2_all_skills_paths_ggplot.png")
-
-# Promote RStudio outputs to publication figures (preferred look)
-pub <- file.path(root, "outputs", "figures")
-dir.create(pub, recursive = TRUE, showWarnings = FALSE)
-file.copy(file.path(outdir, "fig1_skill_prepost_ggplot.png"),
-          file.path(pub, "fig1_skill_mean_decline.png"), overwrite = TRUE)
-file.copy(file.path(outdir, "fig2_golem_paths_ggplot.png"),
-          file.path(pub, "fig2_golem_speaking_paths.png"), overwrite = TRUE)
-message("Copied RStudio figures into outputs/figures/ (publication set)")
+outfile <- file.path(outdir, "fig1_skill_prepost_ggplot.png")
+ggsave(outfile, p1, width = 9.6, height = 6.0, dpi = 180, bg = "#F7F9FB")
+file.copy(outfile, file.path(pub, "fig1_skill_mean_decline.png"), overwrite = TRUE)
+message("Wrote ", outfile)
+message("Copied to outputs/figures/fig1_skill_mean_decline.png")
