@@ -127,23 +127,31 @@ ggsave(file.path(outdir, "fig1_skill_prepost_ggplot.png"), p1,
        width = 9.6, height = 6.0, dpi = 180, bg = "#F7F9FB")
 message("Wrote fig1_skill_prepost_ggplot.png")
 
-# Figure 2 ----------------------------------------------------------------------
-long2 <- bind_rows(
+# Figure 2 — oral–aural scatters (Listening + Speaking) ----------------------------
+mk_panel <- function(skill, pred_name, pred_vals, letter) {
   data.frame(
-    Panel = "A. Underrating gap\n(actual PYP − lecturer estimate)",
-    Predictor = students$Underrating_Gap,
-    Decline = students$Decline_Speaking
-  ),
-  data.frame(
-    Panel = "B. Translanguaging exposure\n(% of class time in Turkish)",
-    Predictor = students$TL_percent,
-    Decline = students$Decline_Speaking
+    Skill = skill,
+    Predictor_name = pred_name,
+    Panel = paste0(letter, ". ", skill, "  ·  ", pred_name),
+    Predictor = pred_vals,
+    Decline = students[[paste0("Decline_", skill)]],
+    stringsAsFactors = FALSE
   )
+}
+
+long2 <- bind_rows(
+  mk_panel("Listening", "Underrating gap", students$Underrating_Gap, "A"),
+  mk_panel("Listening", "Translanguaging %", students$TL_percent, "B"),
+  mk_panel("Speaking", "Underrating gap", students$Underrating_Gap, "C"),
+  mk_panel("Speaking", "Translanguaging %", students$TL_percent, "D")
 )
+long2$Skill <- factor(long2$Skill, levels = c("Listening", "Speaking"))
+long2$Predictor_name <- factor(long2$Predictor_name,
+                               levels = c("Underrating gap", "Translanguaging %"))
 long2$Panel <- factor(long2$Panel, levels = unique(long2$Panel))
 
 stats_lab <- long2 %>%
-  group_by(Panel) %>%
+  group_by(Panel, Skill, Predictor_name) %>%
   summarise(
     r = cor(Predictor, Decline),
     p = cor.test(Predictor, Decline)$p.value,
@@ -157,24 +165,94 @@ stats_lab <- long2 %>%
 
 p2 <- ggplot(long2, aes(Predictor, Decline)) +
   geom_hline(yintercept = 0, linetype = "dotted", colour = "#8A949E", linewidth = 0.55) +
-  geom_point(colour = "#3D6F9C", alpha = 0.55, size = 2.1,
-             stroke = 0.2, fill = "#3D6F9C", shape = 21) +
+  geom_point(aes(colour = Skill), alpha = 0.55, size = 2.0, stroke = 0.15, shape = 16) +
   geom_smooth(method = "lm", formula = y ~ x, colour = "#C0392B",
-              fill = "#E8B4B0", alpha = 0.35, linewidth = 1.05, se = TRUE) +
+              fill = "#E8B4B0", alpha = 0.35, linewidth = 1.0, se = TRUE) +
   geom_label(
     data = stats_lab, aes(x = x, y = y, label = label),
-    inherit.aes = FALSE, hjust = -0.05, vjust = 1.2, size = 3,
-    fontface = "bold", fill = "white", label.size = 0.2, colour = "#1B1F24"
+    inherit.aes = FALSE, hjust = -0.04, vjust = 1.15, size = 2.7,
+    fontface = "bold", fill = "white", label.size = 0.15, colour = "#1B1F24"
   ) +
-  facet_wrap(~ Panel, scales = "free_x", nrow = 1) +
+  facet_wrap(~ Panel, scales = "free_x", nrow = 2) +
+  scale_colour_manual(values = c(Listening = "#3D6F9C", Speaking = "#E08A2E"), guide = "none") +
   labs(
-    title = "Figure 2. Speaking decline associated with underrating and translanguaging",
-    subtitle = "ggplot2 / RStudio  ·  positive = attrition on 0–100 scale  ·  band = 95% CI of fitted line  ·  N = 120",
-    x = "Predictor", y = "Speaking decline (pre − post)",
-    caption = "SYNTHETIC panel for manuscript scaffolding"
+    title = "Figure 2. Oral–aural attrition paths: Listening and Speaking",
+    subtitle = paste(
+      "ggplot2 / RStudio  ·  rows = skill; columns = underrating vs translanguaging",
+      "·  positive = attrition (pre − post)  ·  95% CI band  ·  N = 120"
+    ),
+    x = "Predictor", y = "Skill decline (pre − post; 0–100 scale)",
+    caption = "Reading/Writing associations are near zero (see companion all-skills figure). SYNTHETIC panel."
   ) +
-  theme_emi()
+  theme_emi(base_size = 10.5)
 
 ggsave(file.path(outdir, "fig2_golem_paths_ggplot.png"), p2,
-       width = 11.0, height = 5.5, dpi = 180, bg = "#F7F9FB")
+       width = 10.8, height = 8.2, dpi = 180, bg = "#F7F9FB")
 message("Wrote fig2_golem_paths_ggplot.png")
+
+# Companion: all four skills × two predictors (archive / supplement)
+long_all <- bind_rows(lapply(c("Listening", "Reading", "Writing", "Speaking"), function(sk) {
+  bind_rows(
+    data.frame(
+      Skill = sk,
+      Predictor_name = "Underrating gap",
+      Predictor = students$Underrating_Gap,
+      Decline = students[[paste0("Decline_", sk)]]
+    ),
+    data.frame(
+      Skill = sk,
+      Predictor_name = "Translanguaging %",
+      Predictor = students$TL_percent,
+      Decline = students[[paste0("Decline_", sk)]]
+    )
+  )
+}))
+long_all$Skill <- factor(long_all$Skill, levels = c("Listening", "Reading", "Writing", "Speaking"))
+long_all$Predictor_name <- factor(long_all$Predictor_name,
+                                  levels = c("Underrating gap", "Translanguaging %"))
+
+stats_all <- long_all %>%
+  group_by(Skill, Predictor_name) %>%
+  summarise(
+    r = cor(Predictor, Decline),
+    p = cor.test(Predictor, Decline)$p.value,
+    .groups = "drop"
+  ) %>%
+  mutate(
+    label = ifelse(p < 0.001, sprintf("r = %.2f***", r),
+            ifelse(p < 0.01, sprintf("r = %.2f**", r),
+            ifelse(p < 0.05, sprintf("r = %.2f*", r), sprintf("r = %.2f", r)))),
+    x = -Inf, y = Inf
+  )
+
+p_all <- ggplot(long_all, aes(Predictor, Decline)) +
+  geom_hline(yintercept = 0, linetype = "dotted", colour = "#8A949E", linewidth = 0.45) +
+  geom_point(colour = "#3D6F9C", alpha = 0.4, size = 1.5) +
+  geom_smooth(method = "lm", formula = y ~ x, colour = "#C0392B",
+              fill = "#E8B4B0", alpha = 0.3, linewidth = 0.85, se = TRUE) +
+  geom_text(
+    data = stats_all, aes(x = x, y = y, label = label),
+    inherit.aes = FALSE, hjust = -0.05, vjust = 1.4, size = 2.5,
+    fontface = "bold", colour = "#1B1F24"
+  ) +
+  facet_grid(Skill ~ Predictor_name, scales = "free_x") +
+  labs(
+    title = "Supplement. Decline × underrating / translanguaging for all four skills",
+    subtitle = "Only Listening and Speaking show reliable positive slopes; Reading/Writing are flat  ·  N = 120",
+    x = "Predictor", y = "Decline (pre − post)",
+    caption = "ggplot2 / RStudio companion (not required for the main manuscript)"
+  ) +
+  theme_emi(base_size = 10)
+
+ggsave(file.path(outdir, "fig2_all_skills_paths_ggplot.png"), p_all,
+       width = 10.5, height = 9.5, dpi = 170, bg = "#F7F9FB")
+message("Wrote fig2_all_skills_paths_ggplot.png")
+
+# Promote RStudio outputs to publication figures (preferred look)
+pub <- file.path(root, "outputs", "figures")
+dir.create(pub, recursive = TRUE, showWarnings = FALSE)
+file.copy(file.path(outdir, "fig1_skill_prepost_ggplot.png"),
+          file.path(pub, "fig1_skill_mean_decline.png"), overwrite = TRUE)
+file.copy(file.path(outdir, "fig2_golem_paths_ggplot.png"),
+          file.path(pub, "fig2_golem_speaking_paths.png"), overwrite = TRUE)
+message("Copied RStudio figures into outputs/figures/ (publication set)")

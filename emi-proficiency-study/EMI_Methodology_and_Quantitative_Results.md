@@ -142,7 +142,7 @@ Means, Standard Deviations, and Correlations of Predictors With Decline_Speaking
 
 Note. Decline_Speaking and Underrating_Gap are in points on the 0–100 institutional scale (PYP pass threshold = 60). TL_percent is percentage of class time in Turkish. PU/EAP/WTC/SE are Likert means (1–5). Format follows Nicol and Pexman (2010a) correlation Play-It-Safe practice of reporting M, SD, and r. *p < .05. **p < .01. ***p < .001.
 
-Figure 2. Speaking decline associated with lecturer underrating (A) and translanguaging exposure (B).
+Figure 2. Oral–aural attrition paths: Listening (A–B) and Speaking (C–D) × underrating / translanguaging.
 
 Note. Speaking change is in points on the 0–100 scale (pre − post). Fitted lines are OLS with 95% confidence bands. Multipanel layout follows Displaying Your Findings conventions for related scatterplots (Nicol & Pexman, 2010b).
 
@@ -197,6 +197,8 @@ Nicol, A. A. M., & Pexman, P. M. (2010b). Displaying your findings: A practical 
 
 ## Figures
 
-![Figure 1. Mean Pre vs Post scores by skill (grouped bars)](outputs/figures/fig1_skill_mean_decline.png)
+![Figure 1. Mean Pre vs Post scores by skill (RStudio)](outputs/rstudio/fig1_skill_prepost_ggplot.png)
 
-![Figure 2. Speaking decline against Underrating Gap and TL% (scatter)](outputs/figures/fig2_golem_speaking_paths.png)
+![Figure 2. Listening + Speaking attrition paths (RStudio)](outputs/rstudio/fig2_golem_paths_ggplot.png)
+
+![Supplement. All four skills × predictors](outputs/rstudio/fig2_all_skills_paths_ggplot.png)

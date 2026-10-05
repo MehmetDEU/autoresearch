@@ -516,24 +516,6 @@ def export_fig1_tableau_csv(s: pd.DataFrame, outdir: Path) -> Path:
     return path
 
 
-def export_fig2_tableau_csv(s: pd.DataFrame, outdir: Path) -> Path:
-    """Point-level CSV for Tableau scatter of Speaking decline paths."""
-    outdir.mkdir(parents=True, exist_ok=True)
-    long = pd.DataFrame(
-        {
-            "Student_ID": list(s["Student_ID"]) * 2,
-            "Panel": (["A. Underrating gap"] * len(s)) + (["B. Translanguaging %"] * len(s)),
-            "Predictor": np.concatenate([s["Underrating_Gap"], s["TL_percent"]]),
-            "Speaking_decline": np.concatenate([s["Decline_Speaking"], s["Decline_Speaking"]]),
-            "N": len(s),
-            "Scale_note": "Speaking decline = Pre − Post on 0–100 scale",
-        }
-    )
-    path = outdir / "fig2_golem_paths_tableau.csv"
-    long.to_csv(path, index=False)
-    return path
-
-
 def _style_pub_axes(ax, *, grid_y: bool = True, grid_x: bool = False) -> None:
     ax.set_facecolor("#FFFFFF")
     ax.spines["top"].set_visible(False)
@@ -779,41 +761,23 @@ def make_fig1_tableau_style(s: pd.DataFrame, outdir: Path) -> Path:
 
 
 def make_fig2_golem_paths(s: pd.DataFrame, outdir: Path) -> Path:
-    """Publication Figure 2: polished two-panel scatter (Speaking decline paths)."""
+    """Publication Figure 2: Listening + Speaking decline × underrating / TL (2×2)."""
     outdir.mkdir(parents=True, exist_ok=True)
     panels = [
-        (
-            "A. Underrating gap",
-            "Actual PYP overall − lecturer estimate",
-            s["Underrating_Gap"],
-            "Underrating gap (points)",
-        ),
-        (
-            "B. Translanguaging exposure",
-            "% of content-course time in Turkish",
-            s["TL_percent"],
-            "Translanguaging (% Turkish)",
-        ),
+        ("A. Listening  ·  Underrating gap", "Listening", s["Underrating_Gap"], "Underrating gap (points)", "#3D6F9C"),
+        ("B. Listening  ·  Translanguaging %", "Listening", s["TL_percent"], "Translanguaging (% Turkish)", "#3D6F9C"),
+        ("C. Speaking  ·  Underrating gap", "Speaking", s["Underrating_Gap"], "Underrating gap (points)", "#E08A2E"),
+        ("D. Speaking  ·  Translanguaging %", "Speaking", s["TL_percent"], "Translanguaging (% Turkish)", "#E08A2E"),
     ]
-    fig, axes = plt.subplots(1, 2, figsize=(11.0, 5.4), facecolor="#F7F9FB", sharey=True)
-    y = s["Decline_Speaking"].to_numpy()
-    for ax, (title, subtitle, xser, xlabel) in zip(axes, panels):
+    fig, axes = plt.subplots(2, 2, figsize=(10.8, 8.2), facecolor="#F7F9FB", sharey=True)
+    for ax, (title, skill, xser, xlabel, col) in zip(axes.ravel(), panels):
         _style_pub_axes(ax, grid_y=True, grid_x=True)
         x = xser.to_numpy()
-        ax.scatter(
-            x,
-            y,
-            s=36,
-            c="#3D6F9C",
-            alpha=0.55,
-            edgecolors="white",
-            linewidths=0.55,
-            zorder=3,
-        )
+        y = s[f"Decline_{skill}"].to_numpy()
+        ax.scatter(x, y, s=28, c=col, alpha=0.55, edgecolors="white", linewidths=0.4, zorder=3)
         slope, intercept, r, p, _se = stats.linregress(x, y)
         xs = np.linspace(x.min(), x.max(), 120)
         ys = intercept + slope * xs
-        # simple analytic CI band for mean line
         yhat = intercept + slope * x
         resid = y - yhat
         dof = max(len(x) - 2, 1)
@@ -822,9 +786,9 @@ def make_fig2_golem_paths(s: pd.DataFrame, outdir: Path) -> Path:
         ssx = np.sum((x - x_mean) ** 2)
         se_fit = s_err * np.sqrt(1 / len(x) + (xs - x_mean) ** 2 / ssx)
         tcrit = stats.t.ppf(0.975, dof)
-        ax.fill_between(xs, ys - tcrit * se_fit, ys + tcrit * se_fit, color="#E8B4B0", alpha=0.45, zorder=1)
-        ax.plot(xs, ys, color="#C0392B", lw=2.0, zorder=4)
-        ax.axhline(0, color="#8A949E", ls=(0, (2, 2)), lw=1.0, zorder=2)
+        ax.fill_between(xs, ys - tcrit * se_fit, ys + tcrit * se_fit, color="#E8B4B0", alpha=0.4, zorder=1)
+        ax.plot(xs, ys, color="#C0392B", lw=1.8, zorder=4)
+        ax.axhline(0, color="#8A949E", ls=(0, (2, 2)), lw=0.9, zorder=2)
         plabel = "p < .001" if p < 0.001 else f"p = {p:.3f}"
         ax.text(
             0.04,
@@ -832,17 +796,17 @@ def make_fig2_golem_paths(s: pd.DataFrame, outdir: Path) -> Path:
             f"r = {r:.2f},  {plabel}",
             transform=ax.transAxes,
             va="top",
-            fontsize=9,
+            fontsize=8.5,
             color="#1B1F24",
             fontweight="bold",
-            bbox={"boxstyle": "round,pad=0.3", "facecolor": "white", "edgecolor": "#D5DBE1", "alpha": 0.95},
+            bbox={"boxstyle": "round,pad=0.28", "facecolor": "white", "edgecolor": "#D5DBE1", "alpha": 0.95},
         )
-        ax.set_title(title, loc="left", fontsize=11, fontweight="bold", color="#1B1F24", pad=8)
-        ax.text(0.0, 1.01, subtitle, transform=ax.transAxes, fontsize=8.5, color="#5C6670", va="bottom")
-        ax.set_xlabel(xlabel, fontsize=9.5, color="#4A5560")
-    axes[0].set_ylabel("Speaking decline (pre − post; points on 0–100)", fontsize=9.5, color="#4A5560")
+        ax.set_title(title, loc="left", fontsize=10, fontweight="bold", color="#1B1F24", pad=6)
+        ax.set_xlabel(xlabel, fontsize=9, color="#4A5560")
+    axes[0, 0].set_ylabel("Listening decline (pre − post)", fontsize=9, color="#4A5560")
+    axes[1, 0].set_ylabel("Speaking decline (pre − post)", fontsize=9, color="#4A5560")
     fig.suptitle(
-        "Figure 2. Speaking decline associated with underrating and translanguaging",
+        "Figure 2. Oral–aural attrition paths: Listening and Speaking",
         x=0.02,
         ha="left",
         fontsize=13,
@@ -852,13 +816,13 @@ def make_fig2_golem_paths(s: pd.DataFrame, outdir: Path) -> Path:
     )
     fig.text(
         0.02,
-        0.935,
-        "Positive values = attrition  ·  bands = 95% CI of the fitted line  ·  SYNTHETIC N = 120",
-        fontsize=9,
+        0.945,
+        "Positive = attrition  ·  bands = 95% CI of fitted line  ·  Reading/Writing associations ≈ 0 (see RStudio all-skills companion)  ·  N = 120",
+        fontsize=8.5,
         color="#5C6670",
     )
     path = outdir / "fig2_golem_speaking_paths.png"
-    fig.tight_layout(rect=(0, 0, 1, 0.91))
+    fig.tight_layout(rect=(0, 0, 1, 0.92))
     fig.savefig(path, dpi=180, facecolor=fig.get_facecolor())
     plt.close(fig)
 
@@ -868,39 +832,73 @@ def make_fig2_golem_paths(s: pd.DataFrame, outdir: Path) -> Path:
     return path
 
 
-def make_fig2_tableau_style(s: pd.DataFrame, outdir: Path) -> Path:
-    """Tableau-inspired companion scatter for Figure 2."""
+def export_fig2_tableau_csv(s: pd.DataFrame, outdir: Path) -> Path:
+    """Point-level CSV for Tableau scatters of Listening + Speaking decline paths."""
     outdir.mkdir(parents=True, exist_ok=True)
-    fig = plt.figure(figsize=(12.0, 5.8), facecolor=T["bg"])
+    rows = []
+    for skill in ["Listening", "Speaking"]:
+        for panel, pred, label in [
+            ("Underrating gap", s["Underrating_Gap"], "Underrating gap"),
+            ("Translanguaging %", s["TL_percent"], "Translanguaging %"),
+        ]:
+            for sid, xv, yv in zip(s["Student_ID"], pred, s[f"Decline_{skill}"]):
+                rows.append(
+                    {
+                        "Student_ID": sid,
+                        "Skill": skill,
+                        "Panel": f"{skill} · {label}",
+                        "Predictor_name": label,
+                        "Predictor": float(xv),
+                        "Skill_decline": float(yv),
+                        "N": len(s),
+                        "Scale_note": "Decline = Pre − Post on 0–100 scale",
+                    }
+                )
+    path = outdir / "fig2_golem_paths_tableau.csv"
+    pd.DataFrame(rows).to_csv(path, index=False)
+    return path
+
+
+def make_fig2_tableau_style(s: pd.DataFrame, outdir: Path) -> Path:
+    """Tableau-inspired 2×2 companion for Listening + Speaking paths."""
+    outdir.mkdir(parents=True, exist_ok=True)
+    fig = plt.figure(figsize=(12.0, 8.0), facecolor=T["bg"])
     fig.suptitle(
-        "Figure 2  ·  Tableau-style  ·  Speaking attrition paths",
+        "Figure 2  ·  Tableau-style  ·  Oral–aural attrition paths",
         x=0.02,
         ha="left",
         fontsize=15,
         fontweight="bold",
         color=T["header"],
-        y=0.97,
+        y=0.98,
     )
-    fig.text(0.02, 0.915, "Point + trend view of the Golem mechanism predictors  ·  SYNTHETIC N = 120", fontsize=9.5, color=T["muted"])
-    gs = GridSpec(1, 2, figure=fig, wspace=0.22, left=0.07, right=0.98, top=0.86, bottom=0.12)
+    fig.text(
+        0.02,
+        0.935,
+        "Listening + Speaking × underrating / translanguaging  ·  SYNTHETIC N = 120",
+        fontsize=9.5,
+        color=T["muted"],
+    )
+    gs = GridSpec(2, 2, figure=fig, wspace=0.22, hspace=0.35, left=0.07, right=0.98, top=0.90, bottom=0.08)
     specs = [
-        (s["Underrating_Gap"], "Underrating gap", T["blue"]),
-        (s["TL_percent"], "% class time in Turkish", T["orange"]),
+        ("Listening", s["Underrating_Gap"], "Underrating gap", T["blue"], "A"),
+        ("Listening", s["TL_percent"], "% class time in Turkish", T["blue"], "B"),
+        ("Speaking", s["Underrating_Gap"], "Underrating gap", T["orange"], "C"),
+        ("Speaking", s["TL_percent"], "% class time in Turkish", T["orange"], "D"),
     ]
-    y = s["Decline_Speaking"]
-    for i, (x, xlab, col) in enumerate(specs):
-        ax = fig.add_subplot(gs[0, i])
-        card(ax, ["A. Underrating → Speaking decline", "B. Translanguaging → Speaking decline"][i])
-        ax.scatter(x, y, s=32, c=col, alpha=0.7, edgecolors="white", linewidths=0.4, zorder=3)
+    for i, (skill, x, xlab, col, letter) in enumerate(specs):
+        ax = fig.add_subplot(gs[i // 2, i % 2])
+        y = s[f"Decline_{skill}"]
+        card(ax, f"{letter}. {skill} decline")
+        ax.scatter(x, y, s=26, c=col, alpha=0.7, edgecolors="white", linewidths=0.35, zorder=3)
         slope, intercept, r, p, _ = stats.linregress(x, y)
         xs = np.linspace(x.min(), x.max(), 80)
-        ax.plot(xs, intercept + slope * xs, color=T["red"], lw=2.2, zorder=4)
+        ax.plot(xs, intercept + slope * xs, color=T["red"], lw=2.0, zorder=4)
         ax.axhline(0, color=T["ink"], lw=0.7, alpha=0.5)
         plabel = "p < .001" if p < 0.001 else f"p = {p:.3f}"
-        ax.text(0.04, 0.95, f"r = {r:.2f}, {plabel}", transform=ax.transAxes, va="top", fontsize=9, fontweight="bold", color=T["header"])
+        ax.text(0.04, 0.95, f"r = {r:.2f}, {plabel}", transform=ax.transAxes, va="top", fontsize=8.5, fontweight="bold", color=T["header"])
         ax.set_xlabel(xlab)
-        if i == 0:
-            ax.set_ylabel("Speaking decline (pre − post)")
+        ax.set_ylabel(f"{skill} decline (pre − post)")
     path = outdir / "fig2_golem_paths_tableau_style.png"
     fig.savefig(path, dpi=170)
     plt.close(fig)
@@ -1072,6 +1070,18 @@ def main() -> None:
         make_fig1_skill_decline(s, FIG),
         make_fig2_golem_paths(s, FIG),
     ]
+
+    # Prefer RStudio ggplot outputs as the manuscript figures when present.
+    rstudio_fig1 = RST / "fig1_skill_prepost_ggplot.png"
+    rstudio_fig2 = RST / "fig2_golem_paths_ggplot.png"
+    if rstudio_fig1.exists():
+        dest = FIG / "fig1_skill_mean_decline.png"
+        dest.write_bytes(rstudio_fig1.read_bytes())
+        paths[0] = dest
+    if rstudio_fig2.exists():
+        dest = FIG / "fig2_golem_speaking_paths.png"
+        dest.write_bytes(rstudio_fig2.read_bytes())
+        paths[1] = dest
 
     if archive:
         ARCH = OUT / "archive"

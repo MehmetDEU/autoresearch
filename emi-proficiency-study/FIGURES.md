@@ -10,7 +10,8 @@ Institutional skill and overall scores are on a **0–100** scale. The Preparato
 ## Publication figures (`outputs/figures/`)
 
 1. `fig1_skill_mean_decline.png` — **grouped Pre vs Post mean scores** by skill (with 95% CI). Listening/Speaking post bars are lower; Reading/Writing are not. Signed-difference bars were retired because readers misread + as gain.
-2. `fig2_golem_speaking_paths.png` — Speaking decline associated with underrating gap and translanguaging exposure.
+2. `fig2_golem_speaking_paths.png` — **Listening + Speaking** decline × underrating / translanguaging (2×2; RStudio ggplot preferred).
+   Companion: `outputs/rstudio/fig2_all_skills_paths_ggplot.png` shows all four skills (Reading/Writing flat).
 
 ## Styled companions (Tableau + RStudio)
 
