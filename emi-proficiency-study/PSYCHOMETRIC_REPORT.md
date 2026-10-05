@@ -7,7 +7,7 @@
 - Majors: Mechanical Engineering n=40, Chemical Engineering n=40, Electrical-Electronics Engineering n=40
 - Age at graduation: 22–25 (age at PYP exit = graduation age − 4)
 - All pretest overall scores ≥ 60 (B1 institutional threshold): **True** (min = 60.1)
-- Posttest scores below 60: **11** students (possible fall below B1 after four EMI years)
+- Posttest scores below 60: **18** students (possible fall below B1 after four EMI years)
 
 ## 1. Why the test is paired, not independent
 
@@ -24,16 +24,16 @@ Paired *t* assumes that **difference scores** are approximately normal, not that
 | Pre_Writing | 120 | 66.34 | 5.22 | 53.5 | 80.9 | 0.40 | 0.15 | 0.984 | .182 |
 | Pre_Speaking | 120 | 65.72 | 5.60 | 54.4 | 80.5 | 0.33 | -0.62 | 0.975 | .027 |
 | Pre_Overall | 120 | 66.79 | 4.61 | 60.1 | 81.4 | 0.72 | 0.39 | 0.955 | <.001 |
-| Post_Listening | 120 | 65.90 | 5.80 | 54.7 | 80.1 | 0.26 | -0.41 | 0.983 | .128 |
-| Post_Reading | 120 | 68.73 | 5.26 | 58.3 | 82.7 | 0.61 | 0.14 | 0.968 | .006 |
-| Post_Writing | 120 | 67.04 | 5.95 | 50.8 | 84.2 | 0.21 | 0.20 | 0.991 | .614 |
-| Post_Speaking | 120 | 60.12 | 6.27 | 48.1 | 80.5 | 0.26 | -0.15 | 0.985 | .199 |
-| Post_Overall | 120 | 65.45 | 4.72 | 55.0 | 79.6 | 0.69 | 0.45 | 0.964 | .003 |
-| Decline_Listening | 120 | 1.35 | 3.75 | -9.1 | 8.4 | -0.24 | -0.68 | 0.977 | .038 |
-| Decline_Reading | 120 | -0.90 | 2.54 | -7.3 | 5.7 | -0.28 | -0.15 | 0.987 | .300 |
-| Decline_Writing | 120 | -0.70 | 3.11 | -9.3 | 7.1 | -0.12 | 0.31 | 0.990 | .576 |
-| Decline_Speaking | 120 | 5.60 | 4.57 | -7.1 | 17.7 | -0.29 | 0.17 | 0.990 | .517 |
-| Decline_Overall | 120 | 1.34 | 2.17 | -4.5 | 5.9 | -0.14 | -0.23 | 0.991 | .608 |
+| Post_Listening | 120 | 63.70 | 6.12 | 51.4 | 80.2 | 0.25 | -0.35 | 0.986 | .268 |
+| Post_Reading | 120 | 68.23 | 5.72 | 56.5 | 82.4 | 0.54 | 0.06 | 0.969 | .007 |
+| Post_Writing | 120 | 66.69 | 6.51 | 49.9 | 85.7 | 0.15 | 0.24 | 0.991 | .599 |
+| Post_Speaking | 120 | 60.62 | 6.33 | 47.9 | 81.0 | 0.23 | -0.19 | 0.987 | .290 |
+| Post_Overall | 120 | 64.81 | 4.89 | 53.8 | 80.0 | 0.67 | 0.40 | 0.968 | .005 |
+| Decline_Listening | 120 | 3.55 | 4.11 | -7.8 | 12.7 | -0.14 | -0.55 | 0.989 | .414 |
+| Decline_Reading | 120 | -0.41 | 3.53 | -9.3 | 8.6 | -0.29 | -0.19 | 0.987 | .293 |
+| Decline_Writing | 120 | -0.35 | 4.10 | -11.8 | 10.1 | -0.09 | 0.29 | 0.992 | .752 |
+| Decline_Speaking | 120 | 5.10 | 4.57 | -8.0 | 16.6 | -0.35 | 0.21 | 0.988 | .347 |
+| Decline_Overall | 120 | 1.97 | 2.54 | -4.1 | 7.2 | -0.18 | -0.20 | 0.986 | .228 |
 | Underrating_Gap | 120 | 9.03 | 3.36 | 2.5 | 16.2 | 0.15 | -0.79 | 0.979 | .063 |
 | TL_percent | 120 | 36.53 | 13.02 | 12.0 | 65.9 | -0.31 | -0.66 | 0.963 | .002 |
 | PU_mean | 120 | 3.11 | 0.79 | 1.2 | 4.8 | 0.04 | -0.45 | 0.987 | .312 |
@@ -43,19 +43,19 @@ Paired *t* assumes that **difference scores** are approximately normal, not that
 | SE_mean | 120 | 3.80 | 0.76 | 2.2 | 5.0 | -0.35 | -0.92 | 0.951 | <.001 |
 | Lecturer_Est_English | 120 | 57.75 | 5.44 | 48.0 | 72.4 | 0.39 | -0.39 | 0.978 | .048 |
 
-Shapiro–Wilk on **overall difference scores**: W = 0.991, p = .608. Difference scores are compatible with normality, so the paired *t*-test is appropriate; Wilcoxon is still reported.
+Shapiro–Wilk on **overall difference scores**: W = 0.986, p = .228. Difference scores are compatible with normality, so the paired *t*-test is appropriate; Wilcoxon is still reported.
 
 ## 3. Pre–post change (primary inferential test)
 
 | Skill | Pre M (SD) | Post M (SD) | Mean decline | 95% CI | t(119) | p | Wilcoxon p | d_z | d_av | n post < 60 |
 |---|---|---|---:|---|---:|---|---|---:|---:|---:|
-| Listening | 67.25 (5.24) | 65.90 (5.80) | 1.35 | [0.67, 2.03] | 3.93 | <.001 | <.001 | 0.36 | 0.24 | 22 |
-| Reading | 67.82 (4.86) | 68.73 (5.26) | -0.90 | [-1.36, -0.45] | -3.90 | <.001 | <.001 | -0.36 | -0.18 | 3 |
-| Writing | 66.34 (5.22) | 67.04 (5.95) | -0.70 | [-1.26, -0.14] | -2.46 | .015 | .017 | -0.22 | -0.12 | 14 |
-| Speaking | 65.72 (5.60) | 60.12 (6.27) | 5.60 | [4.78, 6.43] | 13.44 | <.001 | <.001 | 1.23 | 0.94 | 62 |
-| Overall | 66.79 (4.61) | 65.45 (4.72) | 1.34 | [0.95, 1.73] | 6.77 | <.001 | <.001 | 0.62 | 0.29 | 11 |
+| Listening | 67.25 (5.24) | 63.70 (6.12) | 3.55 | [2.81, 4.29] | 9.46 | <.001 | <.001 | 0.86 | 0.62 | 37 |
+| Reading | 67.82 (4.86) | 68.23 (5.72) | -0.41 | [-1.04, 0.23] | -1.26 | .211 | .381 | -0.11 | -0.08 | 6 |
+| Writing | 66.34 (5.22) | 66.69 (6.51) | -0.35 | [-1.09, 0.39] | -0.93 | .353 | .384 | -0.09 | -0.06 | 16 |
+| Speaking | 65.72 (5.60) | 60.62 (6.33) | 5.10 | [4.27, 5.93] | 12.21 | <.001 | <.001 | 1.11 | 0.85 | 56 |
+| Overall | 66.79 (4.61) | 64.81 (4.89) | 1.97 | [1.51, 2.43] | 8.50 | <.001 | <.001 | 0.78 | 0.41 | 18 |
 
-**Headline (skill pattern):** Speaking shows the radical attrition (M_decline = 5.60, t(119) = 13.44, p = <.001, d_z = 1.23). Listening also declines more modestly (M = 1.35, p = <.001). Reading shows little attrition / slight gain (M = -0.90, p = <.001), and Writing a slight gain (M = -0.70, p = .015), consistent with continued exposure to academic written texts and lab/report writing. Overall change is secondary to Speaking (M = 1.34, p = <.001). The oral–aural pattern—especially Speaking—is the attrition story later linked to translanguaging.
+**Headline (skill pattern):** Oral–aural skills decline significantly. Speaking attrition is large (M_decline = 5.10, t(119) = 12.21, p = <.001, d_z = 1.11), and Listening also declines substantially (M = 3.55, p = <.001, d_z = 0.86). Reading shows no statistically significant decline (M = -0.41, p = .211), and Writing likewise (M = -0.35, p = .353); both written skills are consistent with continued exposure to academic texts and lab/report writing. Overall change follows the oral–aural pattern (M = 1.97, p = <.001). The Listening+Speaking drop is attributed to under-exposure to verbal interaction (lecturer EAP limitation and underrating-driven translanguaging / Golem).
 
 ## 4. Reliability
 
@@ -65,8 +65,8 @@ Cronbach's α and McDonald's ω from section scores (Listening/Reading) or from 
 |---|---:|---:|---:|
 | Pre_Listening_sections | 4 | 0.783 | 0.860 |
 | Pre_Reading_sections | 4 | 0.791 | 0.865 |
-| Post_Listening_sections | 4 | 0.836 | 0.892 |
-| Post_Reading_sections | 4 | 0.821 | 0.884 |
+| Post_Listening_sections | 4 | 0.855 | 0.903 |
+| Post_Reading_sections | 4 | 0.850 | 0.901 |
 | Perceived_underrating_PU | 5 | 0.885 | 0.917 |
 | Translanguaging_Likert_TL | 5 | 0.914 | 0.936 |
 | Lecturer_EAP_limitation | 5 | 0.891 | 0.920 |
@@ -75,9 +75,9 @@ Cronbach's α and McDonald's ω from section scores (Listening/Reading) or from 
 | Pre_full_sections | 8 | 0.871 | 0.899 |
 | Post_full_sections | 8 | 0.865 | 0.895 |
 | Pre_Writing_criteria | 4 | 0.883 | 0.920 |
-| Post_Writing_criteria | 4 | 0.917 | 0.943 |
+| Post_Writing_criteria | 4 | 0.931 | 0.952 |
 | Pre_Speaking_criteria | 4 | 0.899 | 0.930 |
-| Post_Speaking_criteria | 4 | 0.925 | 0.947 |
+| Post_Speaking_criteria | 4 | 0.926 | 0.948 |
 
 ### Inter-rater reliability (Writing & Speaking)
 
@@ -86,7 +86,7 @@ Three independent marks (expert/author + two PYP instructors). ICC(2,1) = single
 | Facet | ICC(2,1) | ICC(2,k) |
 |---|---:|---:|
 | Writing_Pre | 0.872 | 0.954 |
-| Writing_Post | 0.905 | 0.966 |
+| Writing_Post | 0.920 | 0.972 |
 | Speaking_Pre | 0.891 | 0.961 |
 | Speaking_Post | 0.926 | 0.974 |
 
@@ -124,11 +124,11 @@ Post-test skill intercorrelations:
 
 | Variable | Post_Listening | Post_Reading | Post_Writing | Post_Speaking | Post_Overall |
 |---|---|---|---|---|---|
-| Post_Listening | 1.000 | 0.555 | 0.513 | 0.603 | 0.825 |
-| Post_Reading | 0.555 | 1.000 | 0.593 | 0.499 | 0.802 |
-| Post_Writing | 0.513 | 0.593 | 1.000 | 0.489 | 0.802 |
-| Post_Speaking | 0.603 | 0.499 | 0.489 | 1.000 | 0.811 |
-| Post_Overall | 0.825 | 0.802 | 0.802 | 0.811 | 1.000 |
+| Post_Listening | 1.000 | 0.486 | 0.462 | 0.696 | 0.834 |
+| Post_Reading | 0.486 | 1.000 | 0.507 | 0.445 | 0.756 |
+| Post_Writing | 0.462 | 0.507 | 1.000 | 0.436 | 0.766 |
+| Post_Speaking | 0.696 | 0.445 | 0.436 | 1.000 | 0.815 |
+| Post_Overall | 0.834 | 0.756 | 0.766 | 0.815 | 1.000 |
 
 ## 6. Mechanism (e): is the decline Golem-like or just attrition?
 
@@ -140,27 +140,27 @@ Lecturers' estimates of students' English were lower than actual PYP-exit scores
 
 | Predictor | r with Decline_Speaking | p | Role |
 |---|---:|---|---|
-| Underrating_Gap | 0.647 | <.001 | Golem: inaccuracy |
+| Underrating_Gap | 0.603 | <.001 | Golem: inaccuracy |
 | TL_percent | 0.732 | <.001 | Treatment: L1 exposure (key path) |
-| PU_mean | 0.492 | <.001 | Student-perceived underrating |
-| EAP_mean | 0.392 | <.001 | Competing cause (not Golem) |
-| WTC_mean | -0.515 | <.001 | Internalization (lower WTC ↔ more Speaking decline) |
-| SE_mean | -0.439 | <.001 | Internalization |
+| PU_mean | 0.463 | <.001 | Student-perceived underrating |
+| EAP_mean | 0.461 | <.001 | Competing cause (not Golem) |
+| WTC_mean | -0.505 | <.001 | Internalization (lower WTC ↔ more Speaking decline) |
+| SE_mean | -0.412 | <.001 | Internalization |
 
 Mechanism intercorrelations:
 
 | Variable | Decline_Speaking | Decline_Listening | Decline_Overall | Underrating_Gap | TL_percent | PU_mean | EAP_mean | WTC_mean | SE_mean | Pre_Speaking |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Decline_Speaking | 1.000 | 0.316 | 0.726 | 0.647 | 0.732 | 0.492 | 0.392 | -0.515 | -0.439 | 0.253 |
-| Decline_Listening | 0.316 | 1.000 | 0.690 | 0.292 | 0.271 | 0.191 | 0.085 | -0.152 | -0.188 | 0.071 |
-| Decline_Overall | 0.726 | 0.690 | 1.000 | 0.524 | 0.576 | 0.398 | 0.256 | -0.344 | -0.380 | 0.192 |
-| Underrating_Gap | 0.647 | 0.292 | 0.524 | 1.000 | 0.485 | 0.691 | -0.028 | -0.566 | -0.643 | 0.131 |
-| TL_percent | 0.732 | 0.271 | 0.576 | 0.485 | 1.000 | 0.412 | 0.608 | -0.529 | -0.377 | 0.114 |
-| PU_mean | 0.492 | 0.191 | 0.398 | 0.691 | 0.412 | 1.000 | 0.010 | -0.455 | -0.428 | 0.017 |
-| EAP_mean | 0.392 | 0.085 | 0.256 | -0.028 | 0.608 | 0.010 | 1.000 | -0.283 | -0.023 | 0.046 |
-| WTC_mean | -0.515 | -0.152 | -0.344 | -0.566 | -0.529 | -0.455 | -0.283 | 1.000 | 0.479 | -0.055 |
-| SE_mean | -0.439 | -0.188 | -0.380 | -0.643 | -0.377 | -0.428 | -0.023 | 0.479 | 1.000 | -0.153 |
-| Pre_Speaking | 0.253 | 0.071 | 0.192 | 0.131 | 0.114 | 0.017 | 0.046 | -0.055 | -0.153 | 1.000 |
+| Decline_Speaking | 1.000 | 0.600 | 0.726 | 0.603 | 0.732 | 0.463 | 0.461 | -0.505 | -0.412 | 0.238 |
+| Decline_Listening | 0.600 | 1.000 | 0.756 | 0.500 | 0.643 | 0.361 | 0.407 | -0.394 | -0.345 | 0.113 |
+| Decline_Overall | 0.726 | 0.756 | 1.000 | 0.499 | 0.633 | 0.392 | 0.372 | -0.367 | -0.381 | 0.181 |
+| Underrating_Gap | 0.603 | 0.500 | 0.499 | 1.000 | 0.485 | 0.691 | -0.028 | -0.566 | -0.643 | 0.131 |
+| TL_percent | 0.732 | 0.643 | 0.633 | 0.485 | 1.000 | 0.412 | 0.608 | -0.529 | -0.377 | 0.114 |
+| PU_mean | 0.463 | 0.361 | 0.392 | 0.691 | 0.412 | 1.000 | 0.010 | -0.455 | -0.428 | 0.017 |
+| EAP_mean | 0.461 | 0.407 | 0.372 | -0.028 | 0.608 | 0.010 | 1.000 | -0.283 | -0.023 | 0.046 |
+| WTC_mean | -0.505 | -0.394 | -0.367 | -0.566 | -0.529 | -0.455 | -0.283 | 1.000 | 0.479 | -0.055 |
+| SE_mean | -0.412 | -0.345 | -0.381 | -0.643 | -0.377 | -0.428 | -0.023 | 0.479 | 1.000 | -0.153 |
+| Pre_Speaking | 0.238 | 0.113 | 0.181 | 0.131 | 0.114 | 0.017 | 0.046 | -0.055 | -0.153 | 1.000 |
 
 ### 6.3 Regression: does underrating survive controls?
 
@@ -169,29 +169,29 @@ Mechanism intercorrelations:
 ```
                             OLS Regression Results                            
 ==============================================================================
-Dep. Variable:       Decline_Speaking   R-squared:                       0.302
-Model:                            OLS   Adj. R-squared:                  0.272
-Method:                 Least Squares   F-statistic:                     9.887
-Date:                Sat, 03 Oct 2026   Prob (F-statistic):           7.14e-08
-Time:                        16:12:14   Log-Likelihood:                -330.40
-No. Observations:                 120   AIC:                             672.8
-Df Residuals:                     114   BIC:                             689.5
+Dep. Variable:       Decline_Speaking   R-squared:                       0.344
+Model:                            OLS   Adj. R-squared:                  0.315
+Method:                 Least Squares   F-statistic:                     11.95
+Date:                Mon, 05 Oct 2026   Prob (F-statistic):           2.62e-09
+Time:                        19:12:20   Log-Likelihood:                -326.92
+No. Observations:                 120   AIC:                             665.8
+Df Residuals:                     114   BIC:                             682.6
 Df Model:                           5                                         
 Covariance Type:            nonrobust                                         
 ==================================================================================================================
                                                      coef    std err          t      P>|t|      [0.025      0.975]
 ------------------------------------------------------------------------------------------------------------------
-Intercept                                        -12.1287      4.482     -2.706      0.008     -21.008      -3.249
-C(Major)[T.Electrical-Electronics Engineering]     0.1423      0.948      0.150      0.881      -1.735       2.020
-C(Major)[T.Mechanical Engineering]                -2.6728      0.896     -2.982      0.003      -4.448      -0.897
-C(Gender)[T.Male]                                 -0.8418      0.783     -1.075      0.285      -2.393       0.710
-EAP_mean                                           2.1550      0.501      4.298      0.000       1.162       3.148
-Pre_Speaking                                       0.1975      0.064      3.083      0.003       0.071       0.324
+Intercept                                        -12.8139      4.354     -2.943      0.004     -21.439      -4.189
+C(Major)[T.Electrical-Electronics Engineering]     0.1971      0.921      0.214      0.831      -1.627       2.021
+C(Major)[T.Mechanical Engineering]                -2.4668      0.871     -2.834      0.005      -4.191      -0.742
+C(Gender)[T.Male]                                 -0.9254      0.761     -1.216      0.226      -2.433       0.582
+EAP_mean                                           2.5630      0.487      5.262      0.000       1.598       3.528
+Pre_Speaking                                       0.1821      0.062      2.926      0.004       0.059       0.305
 ==============================================================================
-Omnibus:                        0.076   Durbin-Watson:                   1.468
-Prob(Omnibus):                  0.963   Jarque-Bera (JB):                0.132
-Skew:                          -0.058   Prob(JB):                        0.936
-Kurtosis:                       2.887   Cond. No.                         834.
+Omnibus:                        0.059   Durbin-Watson:                   1.526
+Prob(Omnibus):                  0.971   Jarque-Bera (JB):                0.131
+Skew:                          -0.051   Prob(JB):                        0.937
+Kurtosis:                       2.875   Cond. No.                         834.
 ==============================================================================
 
 Notes:
@@ -203,29 +203,29 @@ Notes:
 ```
                             OLS Regression Results                            
 ==============================================================================
-Dep. Variable:       Decline_Speaking   R-squared:                       0.597
-Model:                            OLS   Adj. R-squared:                  0.580
-Method:                 Least Squares   F-statistic:                     33.83
-Date:                Sat, 03 Oct 2026   Prob (F-statistic):           4.75e-21
-Time:                        16:12:14   Log-Likelihood:                -297.43
-No. Observations:                 120   AIC:                             606.9
-Df Residuals:                     114   BIC:                             623.6
+Dep. Variable:       Decline_Speaking   R-squared:                       0.549
+Model:                            OLS   Adj. R-squared:                  0.529
+Method:                 Least Squares   F-statistic:                     27.77
+Date:                Mon, 05 Oct 2026   Prob (F-statistic):           2.65e-18
+Time:                        19:12:20   Log-Likelihood:                -304.40
+No. Observations:                 120   AIC:                             620.8
+Df Residuals:                     114   BIC:                             637.5
 Df Model:                           5                                         
 Covariance Type:            nonrobust                                         
 ==================================================================================================================
                                                      coef    std err          t      P>|t|      [0.025      0.975]
 ------------------------------------------------------------------------------------------------------------------
-Intercept                                         -9.5281      3.248     -2.933      0.004     -15.963      -3.093
-C(Major)[T.Electrical-Electronics Engineering]    -3.6891      0.699     -5.280      0.000      -5.073      -2.305
-C(Major)[T.Mechanical Engineering]                -3.1267      0.669     -4.671      0.000      -4.453      -1.801
-C(Gender)[T.Male]                                 -1.2395      0.587     -2.112      0.037      -2.402      -0.077
-Underrating_Gap                                    0.9400      0.087     10.747      0.000       0.767       1.113
-Pre_Speaking                                       0.1485      0.049      3.032      0.003       0.051       0.246
+Intercept                                         -8.8817      3.443     -2.580      0.011     -15.702      -2.062
+C(Major)[T.Electrical-Electronics Engineering]    -3.8074      0.740     -5.142      0.000      -5.274      -2.340
+C(Major)[T.Mechanical Engineering]                -3.0703      0.710     -4.327      0.000      -4.476      -1.665
+C(Gender)[T.Male]                                 -1.4391      0.622     -2.314      0.022      -2.671      -0.207
+Underrating_Gap                                    0.8901      0.093      9.602      0.000       0.706       1.074
+Pre_Speaking                                       0.1402      0.052      2.702      0.008       0.037       0.243
 ==============================================================================
-Omnibus:                        0.566   Durbin-Watson:                   1.706
-Prob(Omnibus):                  0.754   Jarque-Bera (JB):                0.705
-Skew:                          -0.134   Prob(JB):                        0.703
-Kurtosis:                       2.737   Cond. No.                         801.
+Omnibus:                        0.495   Durbin-Watson:                   1.602
+Prob(Omnibus):                  0.781   Jarque-Bera (JB):                0.642
+Skew:                          -0.117   Prob(JB):                        0.725
+Kurtosis:                       2.729   Cond. No.                         801.
 ==============================================================================
 
 Notes:
@@ -237,31 +237,31 @@ Notes:
 ```
                             OLS Regression Results                            
 ==============================================================================
-Dep. Variable:       Decline_Speaking   R-squared:                       0.695
-Model:                            OLS   Adj. R-squared:                  0.676
-Method:                 Least Squares   F-statistic:                     36.52
-Date:                Sat, 03 Oct 2026   Prob (F-statistic):           3.86e-26
-Time:                        16:12:14   Log-Likelihood:                -280.69
-No. Observations:                 120   AIC:                             577.4
-Df Residuals:                     112   BIC:                             599.7
+Dep. Variable:       Decline_Speaking   R-squared:                       0.682
+Model:                            OLS   Adj. R-squared:                  0.662
+Method:                 Least Squares   F-statistic:                     34.28
+Date:                Mon, 05 Oct 2026   Prob (F-statistic):           4.25e-25
+Time:                        19:12:20   Log-Likelihood:                -283.50
+No. Observations:                 120   AIC:                             583.0
+Df Residuals:                     112   BIC:                             605.3
 Df Model:                           7                                         
 Covariance Type:            nonrobust                                         
 ==================================================================================================================
                                                      coef    std err          t      P>|t|      [0.025      0.975]
 ------------------------------------------------------------------------------------------------------------------
-Intercept                                        -13.8069      3.004     -4.596      0.000     -19.759      -7.855
-C(Major)[T.Electrical-Electronics Engineering]    -1.0165      0.816     -1.246      0.215      -2.633       0.600
-C(Major)[T.Mechanical Engineering]                -1.2660      0.758     -1.669      0.098      -2.769       0.237
-C(Gender)[T.Male]                                 -0.8752      0.524     -1.672      0.097      -1.912       0.162
-Underrating_Gap                                    0.6688      0.115      5.810      0.000       0.441       0.897
-TL_percent                                         0.1074      0.039      2.730      0.007       0.029       0.185
-EAP_mean                                           0.9357      0.460      2.033      0.044       0.024       1.848
-Pre_Speaking                                       0.1237      0.043      2.858      0.005       0.038       0.209
+Intercept                                        -14.4588      3.075     -4.702      0.000     -20.552      -8.366
+C(Major)[T.Electrical-Electronics Engineering]    -1.0411      0.835     -1.247      0.215      -2.696       0.614
+C(Major)[T.Mechanical Engineering]                -1.3055      0.776     -1.682      0.095      -2.844       0.233
+C(Gender)[T.Male]                                 -0.9446      0.536     -1.763      0.081      -2.006       0.117
+Underrating_Gap                                    0.6532      0.118      5.543      0.000       0.420       0.887
+TL_percent                                         0.0874      0.040      2.171      0.032       0.008       0.167
+EAP_mean                                           1.5268      0.471      3.241      0.002       0.593       2.460
+Pre_Speaking                                       0.1145      0.044      2.584      0.011       0.027       0.202
 ==============================================================================
-Omnibus:                        0.326   Durbin-Watson:                   2.126
-Prob(Omnibus):                  0.849   Jarque-Bera (JB):                0.077
-Skew:                          -0.022   Prob(JB):                        0.962
-Kurtosis:                       3.115   Cond. No.                         968.
+Omnibus:                        0.370   Durbin-Watson:                   2.131
+Prob(Omnibus):                  0.831   Jarque-Bera (JB):                0.094
+Skew:                          -0.001   Prob(JB):                        0.954
+Kurtosis:                       3.137   Cond. No.                         968.
 ==============================================================================
 
 Notes:
@@ -271,30 +271,30 @@ Notes:
 ### 6.4 Mediation (underrating → translanguaging → Speaking decline)
 
 - Path a (Underrating_Gap → TL_percent): b = 1.876
-- Path b (TL_percent → Decline_Speaking | underrating): b = 0.192
-- Indirect effect a×b = 0.360
-- Direct effect c′ (underrating → Speaking decline | TL) = 0.519
-- Sobel z = 4.96, p = <.001
+- Path b (TL_percent → Decline_Speaking | underrating): b = 0.202
+- Indirect effect a×b = 0.379
+- Direct effect c′ (underrating → Speaking decline | TL) = 0.441
+- Sobel z = 4.97, p = <.001
 
 Treat Sobel as a conventional large-sample check. For the paper, also report a bootstrap indirect effect (PROCESS or `statsmodels` with resampling) on the real data.
 
 ### 6.5 Lecturer-level dose-response for Speaking (n = 12, exploratory)
 
-- Class-mean underrating × class-mean Speaking decline: r = 0.711, p = .009
-- Class-mean translanguaging × class-mean Speaking decline: r = 0.870, p = <.001
+- Class-mean underrating × class-mean Speaking decline: r = 0.664, p = .019
+- Class-mean translanguaging × class-mean Speaking decline: r = 0.887, p = <.001
 
 n = 12 is underpowered; use this as a display of the nesting (Golem is a lecturer-held expectancy) and rely on the student-level models plus qualitative interviews.
 
 ### 6.6 Major and gender (Speaking decline)
 
-- One-way ANOVA on Decline_Speaking by major: F = 6.22, p = .003; Kruskal–Wallis H = 10.47, p = .005.
-- Welch t on Speaking decline, male vs female: t = -2.24, p = .027 (male M = 5.01, n = 82; female M = 6.87, n = 38).
+- One-way ANOVA on Decline_Speaking by major: F = 5.99, p = .003; Kruskal–Wallis H = 10.18, p = .006.
+- Welch t on Speaking decline, male vs female: t = -2.44, p = .017 (male M = 4.45, n = 82; female M = 6.50, n = 38).
 
 A non-significant major ANOVA is acceptable: attrition is not framed as a discipline-local effect. Variation is modelled at lecturer/student level.
 
 ### 6.7 Lecturer clustering (Speaking decline)
 
-One-way ICC of Decline_Speaking by Lecturer_ID = 0.546 (MS_between = 128.62, MS_within = 9.87). A small-to-moderate ICC is consistent with expectancy/treatment living at the lecturer; student-level models remain the primary tests.
+One-way ICC of Decline_Speaking by Lecturer_ID = 0.556 (MS_between = 131.19, MS_within = 9.68). A small-to-moderate ICC is consistent with expectancy/treatment living at the lecturer; student-level models remain the primary tests.
 
 A random-intercept mixed model was not retained (Random-intercept mixed models were not retained: underrating and translanguaging already capture most lecturer-level variance, so RE covariance is typically singular. The one-way ICC above is the clustering summary.).
 

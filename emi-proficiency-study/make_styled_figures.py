@@ -166,7 +166,7 @@ def make_tableau_dashboard(s: pd.DataFrame, lect: pd.DataFrame) -> Path:
 
     fig = plt.figure(figsize=(14.5, 9.2), facecolor=T["bg"])
     fig.suptitle(
-        "EMI proficiency panel  ·  Speaking-led attrition  ·  SYNTHETIC N = 120",
+        "EMI proficiency panel  ·  Oral–aural attrition (L+S)  ·  SYNTHETIC N = 120",
         fontsize=15,
         fontweight="bold",
         color=T["header"],
@@ -177,7 +177,7 @@ def make_tableau_dashboard(s: pd.DataFrame, lect: pd.DataFrame) -> Path:
     fig.text(
         0.01,
         0.945,
-        "Paired PYP-exit vs graduation  |  Speaking is the radical drop; Reading/Writing stable or slightly up  |  B1 threshold = 60",
+        "Paired PYP-exit vs graduation  |  Listening + Speaking decline; Reading/Writing not significantly down  |  B1 threshold = 60",
         fontsize=9,
         color=T["muted"],
     )

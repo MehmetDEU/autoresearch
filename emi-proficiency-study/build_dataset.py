@@ -301,35 +301,39 @@ def generate(seed: int) -> dict:
 
     z_u = (underrating_gap - underrating_gap.mean()) / underrating_gap.std()
     z_t = (tl_percent - tl_percent.mean()) / tl_percent.std()
+    z_e = (eap_mean - eap_mean.mean()) / eap_mean.std()
 
     # Skill-specific change (positive = decline / attrition).
-    # Oral-aural skills drop; Speaking is the radical driver and tracks translanguaging.
-    # Reading may rise slightly (written academic exposure); Writing may rise slightly
-    # (lab reports / written assignments) — unlike Speaking.
+    # Oral–aural skills (Listening + Speaking) decline: under-exposure to verbal
+    # interaction from lecturer EAP limitation and underrating-driven L1 use (Golem).
+    # Reading/Writing: no significant decline; slight gains from written academic
+    # exposure (receptive texts + lab reports / written assignments).
     d_s = (
-        5.80
-        + 3.35 * z_t
-        + 1.25 * z_u
-        + rng.normal(0.0, 2.55, N)
+        5.10
+        + 3.10 * z_t
+        + 1.15 * z_u
+        + 0.45 * z_e
+        + rng.normal(0.0, 2.60, N)
     )
     d_l = (
-        1.45
-        + 0.50 * z_t
-        + 0.30 * z_u
-        + rng.normal(0.0, 3.40, N)
+        3.55
+        + 1.35 * z_t
+        + 0.95 * z_u
+        + 0.85 * z_e
+        + rng.normal(0.0, 2.85, N)
     )
-    # Negative values = improvement (gain). Keep near zero / slight gain.
+    # Negative = slight gain; keep noise large enough that paired p stays n.s.
     d_r = (
-        -0.85
-        + 0.15 * z_t
-        + 0.10 * z_u
-        + rng.normal(0.0, 2.80, N)
+        -0.40
+        + 0.08 * z_t
+        + 0.05 * z_u
+        + rng.normal(0.0, 3.90, N)
     )
     d_w = (
-        -0.65
-        + 0.20 * z_t
-        + 0.15 * z_u
-        + rng.normal(0.0, 2.90, N)
+        -0.35
+        + 0.10 * z_t
+        + 0.06 * z_u
+        + rng.normal(0.0, 3.95, N)
     )
 
     post_l = np.clip(pre_l - d_l, 48.0, 88.0)
@@ -344,15 +348,15 @@ def generate(seed: int) -> dict:
     def _shift_to_mean_decline(post: np.ndarray, pre: np.ndarray, target_decline: float, lo: float, hi: float) -> np.ndarray:
         return np.clip(post + ((pre.mean() - post.mean()) - target_decline), lo, hi)
 
-    post_s = _shift_to_mean_decline(post_s, pre_s, target_decline=5.60, lo=42.0, hi=88.0)
+    post_s = _shift_to_mean_decline(post_s, pre_s, target_decline=5.10, lo=42.0, hi=88.0)
     speak_post_r = np.clip(speak_post_r + (post_s.mean() - speak_post_r.mean(axis=(1, 2)).mean()), 42.0, 90.0)
     # Keep rubric means aligned with official speaking score after the skill shift.
     speak_delta = post_s - speak_post_r.mean(axis=(1, 2))
     speak_post_r = np.clip(speak_post_r + speak_delta[:, None, None], 42.0, 90.0)
 
-    post_l = _shift_to_mean_decline(post_l, pre_l, target_decline=1.45, lo=48.0, hi=88.0)
-    post_r = _shift_to_mean_decline(post_r, pre_r, target_decline=-0.90, lo=48.0, hi=90.0)
-    post_w = _shift_to_mean_decline(post_w, pre_w, target_decline=-0.70, lo=48.0, hi=90.0)
+    post_l = _shift_to_mean_decline(post_l, pre_l, target_decline=3.55, lo=48.0, hi=88.0)
+    post_r = _shift_to_mean_decline(post_r, pre_r, target_decline=-0.40, lo=48.0, hi=90.0)
+    post_w = _shift_to_mean_decline(post_w, pre_w, target_decline=-0.35, lo=48.0, hi=90.0)
     write_delta = post_w - write_post_r.mean(axis=(1, 2))
     write_post_r = np.clip(write_post_r + write_delta[:, None, None], 48.0, 92.0)
 
@@ -384,21 +388,47 @@ def generate(seed: int) -> dict:
         pre_l[low] = r1(pre_l[low] + need)
         pre_overall = r1((pre_l + pre_r + pre_w + pre_s) / 4.0)
 
-    # Soft-calibrate Speaking (must stay highly significant) and Listening
-    # (modest significant attrition). Do not flatten Reading/Writing gains.
+    # Soft-calibrate oral–aural declines (both significant) and keep
+    # Reading/Writing as non-significant slight gains.
     def _paired_p(pre: np.ndarray, post: np.ndarray) -> float:
         return float(stats.ttest_rel(pre, post).pvalue)
 
-    for _ in range(25):
+    for _ in range(30):
         p_s = _paired_p(pre_s, post_s)
         mean_s = float((pre_s - post_s).mean())
-        if p_s < 0.001 and 4.8 <= mean_s <= 6.4:
+        if p_s < 0.001 and 4.4 <= mean_s <= 5.8:
             break
-        step = -0.12 if mean_s < 4.8 else 0.12
+        step = -0.12 if mean_s < 4.4 else 0.12
         post_s = r1(np.clip(post_s - step, 42.0, 88.0))
         speak_post_r = np.clip(speak_post_r - step, 42.0, 90.0)
-    # Re-anchor Listening to a modest attrition target after rounding.
-    post_l = r1(np.clip(post_l + ((pre_l.mean() - post_l.mean()) - 1.35), 48.0, 88.0))
+
+    for _ in range(30):
+        p_l = _paired_p(pre_l, post_l)
+        mean_l = float((pre_l - post_l).mean())
+        if p_l < 0.001 and 2.8 <= mean_l <= 4.3:
+            break
+        step = -0.12 if mean_l < 2.8 else 0.12
+        post_l = r1(np.clip(post_l - step, 48.0, 88.0))
+
+    # Pull Reading/Writing toward a small gain that is not statistically significant.
+    for _ in range(40):
+        mean_r = float((pre_r - post_r).mean())
+        p_r = _paired_p(pre_r, post_r)
+        if -0.85 <= mean_r <= 0.15 and p_r >= 0.05:
+            break
+        # Shrink the absolute mean decline toward ~-0.40 (slight gain).
+        step = 0.08 if mean_r < -0.85 else (-0.08 if mean_r > 0.15 else (0.06 if p_r < 0.05 and mean_r < 0 else -0.06))
+        post_r = r1(np.clip(post_r + step, 48.0, 90.0))
+
+    for _ in range(40):
+        mean_w = float((pre_w - post_w).mean())
+        p_w = _paired_p(pre_w, post_w)
+        if -0.85 <= mean_w <= 0.15 and p_w >= 0.05:
+            break
+        step = 0.08 if mean_w < -0.85 else (-0.08 if mean_w > 0.15 else (0.06 if p_w < 0.05 and mean_w < 0 else -0.06))
+        post_w = r1(np.clip(post_w + step, 48.0, 90.0))
+        write_post_r = np.clip(write_post_r + step, 48.0, 92.0)
+
     post_overall = r1((post_l + post_r + post_w + post_s) / 4.0)
 
     lecturer_est = r1(lecturer_est)
@@ -919,24 +949,27 @@ def write_report(bundle: dict, analysis: dict, diag: dict, path: Path) -> None:
         )
     lines += [
         "",
-        f"**Headline (skill pattern):** Speaking shows the radical attrition "
+        f"**Headline (skill pattern):** Oral–aural skills decline significantly. "
+        f"Speaking attrition is large "
         f"(M_decline = {analysis['paired']['Speaking']['mean_decline']:.2f}, "
         f"t(119) = {analysis['paired']['Speaking']['t']:.2f}, "
         f"p = {apa_p(analysis['paired']['Speaking']['p_t'])}, "
-        f"d_z = {analysis['paired']['Speaking']['d_z']:.2f}). "
-        f"Listening also declines more modestly "
+        f"d_z = {analysis['paired']['Speaking']['d_z']:.2f}), "
+        f"and Listening also declines substantially "
         f"(M = {analysis['paired']['Listening']['mean_decline']:.2f}, "
-        f"p = {apa_p(analysis['paired']['Listening']['p_t'])}). "
-        f"Reading shows little attrition / slight gain "
+        f"p = {apa_p(analysis['paired']['Listening']['p_t'])}, "
+        f"d_z = {analysis['paired']['Listening']['d_z']:.2f}). "
+        f"Reading shows no statistically significant decline "
         f"(M = {analysis['paired']['Reading']['mean_decline']:.2f}, "
         f"p = {apa_p(analysis['paired']['Reading']['p_t'])}), "
-        f"and Writing a slight gain "
+        f"and Writing likewise "
         f"(M = {analysis['paired']['Writing']['mean_decline']:.2f}, "
-        f"p = {apa_p(analysis['paired']['Writing']['p_t'])}), "
-        "consistent with continued exposure to academic written texts and lab/report writing. "
-        f"Overall change is secondary to Speaking "
+        f"p = {apa_p(analysis['paired']['Writing']['p_t'])}); "
+        "both written skills are consistent with continued exposure to academic texts and lab/report writing. "
+        f"Overall change follows the oral–aural pattern "
         f"(M = {p['mean_decline']:.2f}, p = {apa_p(p['p_t'])}). "
-        "The oral–aural pattern—especially Speaking—is the attrition story later linked to translanguaging.",
+        "The Listening+Speaking drop is attributed to under-exposure to verbal interaction "
+        "(lecturer EAP limitation and underrating-driven translanguaging / Golem).",
         "",
         "## 4. Reliability",
         "",
@@ -1381,7 +1414,7 @@ def make_figures(bundle: dict, analysis: dict, outdir: Path) -> list[Path]:
     r = analysis["golem_corr_table"].iloc[1]
     axes[1].set_xlabel("% of content-course time in Turkish")
     axes[1].set_title(f"Translanguaging → Speaking  r = {r['r']:.2f}, p = {apa_p(r['p'])}")
-    fig.suptitle("Speaking attrition tracks underrating and L1 exposure (not uniform rust)")
+    fig.suptitle("Oral–aural attrition tracks underrating and L1 exposure (not uniform rust)")
     fig.tight_layout()
     p = outdir / "golem_mechanism_scatter.png"
     fig.savefig(p, dpi=140)
@@ -1398,7 +1431,7 @@ def make_figures(bundle: dict, analysis: dict, outdir: Path) -> list[Path]:
     ax.bar(skills, means, color=colors, yerr=cis, capsize=4)
     ax.axhline(0, color="black", lw=0.8)
     ax.set_ylabel("Mean decline (pre − post); negative = gain")
-    ax.set_title("Speaking attrition dominates; Reading/Writing stable or slightly up")
+    ax.set_title("Listening + Speaking decline; Reading/Writing not significantly down")
     fig.tight_layout()
     p = outdir / "skill_decline_bars.png"
     fig.savefig(p, dpi=140)
@@ -1412,16 +1445,19 @@ def passes(diag: dict) -> bool:
         63.5 <= diag["pre_mean"] <= 68.5
         and diag["min_pre"] >= 60.0
         and 66.0 <= diag["male_pct"] <= 70.0
-        and diag["mean_s"] >= 4.5
+        # Oral–aural: both Listening and Speaking decline significantly.
+        and diag["mean_s"] >= 4.0
         and diag["p_s"] < 0.001
-        and 0.70 <= diag["mean_l"] <= 2.2
-        and diag["p_l"] < 0.05
-        and diag["mean_r"] <= 0.15
-        and diag["mean_w"] <= 0.20
-        and diag["mean_s"] >= diag["mean_l"] + 3.0
-        and 0.30 <= diag["r_underrating"] <= 0.65
+        and 2.5 <= diag["mean_l"] <= 4.5
+        and diag["p_l"] < 0.01
+        # Written skills: no significant decline (slight gain OK).
+        and -1.0 <= diag["mean_r"] <= 0.25
+        and diag["p_r"] >= 0.05
+        and -1.0 <= diag["mean_w"] <= 0.25
+        and diag["p_w"] >= 0.05
+        and 0.30 <= diag["r_underrating"] <= 0.70
         and diag["p_underrating"] < 0.05
-        and 0.45 <= diag["r_tl"] <= 0.75
+        and 0.40 <= diag["r_tl"] <= 0.78
         and diag["p_tl"] < 0.05
         and diag["shapiro_diff_p"] > 0.01
         and diag["r_eap_tl"] >= 0.15
@@ -1448,7 +1484,7 @@ def main() -> None:
                 f"rTL={diag['r_tl']:.2f} rU={diag['r_underrating']:.2f}"
             )
     if chosen is None:
-        # Fall back to the seed closest to the Speaking-led skill story.
+        # Fall back to the seed closest to the oral–aural decline story.
         best_seed = 20261003
         best_score = 1e9
         best_bundle = None
@@ -1457,17 +1493,23 @@ def main() -> None:
             bundle = generate(seed)
             diag = diagnostics(bundle)
             score = (
-                abs(diag["mean_s"] - 5.6) * 2.0
-                + abs(diag["mean_l"] - 1.45)
-                + max(0.0, diag["mean_r"]) * 4.0
-                + max(0.0, diag["mean_w"]) * 4.0
-                + max(0.0, 0.45 - diag["r_tl"]) * 12
+                abs(diag["mean_s"] - 5.1) * 2.0
+                + abs(diag["mean_l"] - 3.55) * 2.0
+                + abs(diag["mean_r"] + 0.40) * 2.0
+                + abs(diag["mean_w"] + 0.35) * 2.0
+                + max(0.0, 0.40 - diag["r_tl"]) * 12
                 + max(0.0, 0.30 - diag["r_underrating"]) * 8
             )
             if diag["p_s"] >= 0.001:
                 score += 20
-            if diag["p_l"] >= 0.05:
-                score += 8
+            if diag["p_l"] >= 0.01:
+                score += 15
+            if diag["p_r"] < 0.05:
+                score += 12
+            if diag["p_w"] < 0.05:
+                score += 12
+            if diag["mean_r"] > 0.25 or diag["mean_w"] > 0.25:
+                score += 10
             if diag["min_pre"] < 60:
                 score += 50
             if score < best_score:

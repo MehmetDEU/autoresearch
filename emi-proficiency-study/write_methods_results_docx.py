@@ -374,20 +374,23 @@ def build() -> Path:
         f"Speaking {fmt(ielts.loc['Pre_Speaking','r'],3)} (all p < .001).",
     )
 
-    add_heading_styled(doc, "Pre–post proficiency change: Speaking-led attrition", level=2)
+    add_heading_styled(doc, "Pre–post proficiency change: oral–aural attrition", level=2)
     sp = paired.loc["Speaking"]; li = paired.loc["Listening"]; re_ = paired.loc["Reading"]; wr = paired.loc["Writing"]; ov = paired.loc["Overall"]
     add_mixed_para(
         doc,
         [
             ("Attrition was not uniform across skills. ", False, False),
-            (f"Speaking showed the radical decline (M_decline = {fmt(sp['mean_decline'])}, ", False, False),
-            (f"t(119) = {fmt(sp['t'])}, p {apa_p(sp['p_t'])}, d_z = {fmt(sp['d_z'])}). ", False, False),
-            (f"Listening also declined more modestly (M = {fmt(li['mean_decline'])}, p {apa_p(li['p_t'])}). ", False, False),
-            (f"Reading showed a slight gain (M = {fmt(re_['mean_decline'])}, p {apa_p(re_['p_t'])}), ", False, False),
-            ("consistent with continued exposure to academic written texts, ", False, False),
-            (f"and Writing a slight gain (M = {fmt(wr['mean_decline'])}, p {apa_p(wr['p_t'])}), ", False, False),
+            ("Both oral–aural skills declined significantly: ", False, False),
+            (f"Speaking (M_decline = {fmt(sp['mean_decline'])}, ", False, False),
+            (f"t(119) = {fmt(sp['t'])}, p {apa_p(sp['p_t'])}, d_z = {fmt(sp['d_z'])}) ", False, False),
+            (f"and Listening (M = {fmt(li['mean_decline'])}, p {apa_p(li['p_t'])}, d_z = {fmt(li['d_z'])}). ", False, False),
+            ("This pattern is consistent with under-exposure to verbal interaction in EMI classrooms, ", False, False),
+            ("arising from lecturers’ own EAP limitations and from underrating students’ English (Golem). ", False, False),
+            (f"Reading showed no statistically significant decline (M = {fmt(re_['mean_decline'])}, p {apa_p(re_['p_t'])}), ", False, False),
+            ("with a slight numerical gain consistent with continued exposure to academic written texts; ", False, False),
+            (f"Writing likewise showed no significant decline (M = {fmt(wr['mean_decline'])}, p {apa_p(wr['p_t'])}), ", False, False),
             ("consistent with lab reports and written assignments. ", False, False),
-            ("The oral–aural pattern—especially Speaking—is therefore the attrition story later linked to translanguaging.", False, False),
+            ("The oral–aural drop is therefore the attrition story later linked to translanguaging and expectancy.", False, False),
         ],
     )
 
@@ -539,12 +542,13 @@ def build() -> Path:
     add_para(
         doc,
         "Across four years of engineering EMI, completers did not show uniform proficiency loss. "
-        "Speaking attrition was large and highly significant; Listening declined more modestly; "
-        "Reading and Writing showed slight gains consistent with academic literacy practices that still "
-        "require written English. Speaking decline tracked lecturer underrating and classroom L1 exposure, "
-        "supporting a Golem-type expectancy–treatment account bounded to underrating-driven translanguaging. "
-        "Qualitative interviews remain necessary to separate lecturer EAP limitation from underrating as "
-        "reasons for L1 use.",
+        "Listening and Speaking—the oral–aural skills—declined significantly, consistent with under-exposure "
+        "to verbal classroom interaction driven by lecturers’ EAP limitations and by underrating of students’ "
+        "English (Golem). Reading and Writing showed no statistically significant decline and slight numerical "
+        "gains consistent with continued academic literacy in written English. Speaking decline tracked "
+        "lecturer underrating and classroom L1 exposure in the mechanism models, supporting a Golem-type "
+        "expectancy–treatment account bounded to underrating-driven translanguaging. Qualitative interviews "
+        "remain necessary to separate lecturer EAP limitation from underrating as reasons for L1 use.",
     )
 
     add_heading_styled(doc, "Limitations specific to these quantitative claims", level=2)

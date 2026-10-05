@@ -22,10 +22,12 @@ This sample dataset therefore measures three extra layers, plus one competing ca
                   They start asking for Turkish and using L1 sources.
 
 4. Outcome         Institutional proficiency change is skill-specific:
-                  Speaking shows radical attrition; Listening a modest
-                  drop; Reading and Writing stay flat or rise slightly
-                  (academic written exposure / lab reports). Speaking
-                  loss is the primary outcome linked to translanguaging.
+                  Listening and Speaking (oral–aural) decline because
+                  students are under-exposed to verbal interaction —
+                  from lecturers’ EAP limitations and from underrating-
+                  driven L1 use (Golem). Reading and Writing show no
+                  significant decline and may rise slightly with written
+                  academic exposure.
 ```
 
 Only step 1 + 2 + 4 is classic Golem (Babad, Inbar & Rosenthal, 1982). Step 3 is the student-side mediator; useful, not sufficient on its own.
@@ -45,9 +47,9 @@ Pure attrition predicts a **similar** drop for everyone (or a drop that only tra
 
 Golem predicts **heterogeneous** drop:
 
-- students whose lecturers underestimate them more → larger **Speaking** decline
-- students in higher-translanguaging classes → larger **Speaking** decline
-- Speaking attrition dominates; Listening declines modestly; Reading/Writing show little loss or slight gains
+- students whose lecturers underestimate them more → larger **Speaking** (and Listening) decline
+- students in higher-translanguaging classes → larger oral–aural decline
+- Listening and Speaking decline significantly; Reading/Writing show no significant decline (slight gains OK)
 - lecturer EAP-gap predicts translanguaging, but once underrating and translanguaging are in the model, EAP-gap should **not** remain the main predictor of Speaking decline
 
 That is why the Excel file includes, for every student:
@@ -64,7 +66,7 @@ Primary quantitative tests for mechanism (e):
 1. Paired *t*: `Pre_Overall` vs `Lecturer_Est_English` — lecturers underestimate.
 2. Pearson / regression: `Decline_Speaking` ~ `Underrating_Gap` + `TL_percent` + `EAP_mean` + covariates.
 3. Mediation (Baron & Kenny / Sobel): underrating → translanguaging → Speaking decline.
-4. Skill pattern: Speaking ≫ Listening attrition; Reading/Writing near zero or slight gains.
+4. Skill pattern: Listening + Speaking both decline significantly; Reading/Writing no significant decline (slight gains OK).
 
 Qualitative interviews (your existing lecturer/student data) then interpret *why* a given lecturer translanguages — underrating vs own EAP gap — so the two paths are not collapsed in the write-up.
 
