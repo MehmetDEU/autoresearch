@@ -634,7 +634,7 @@ def build() -> Path:
         add_figure_caption(
             doc,
             "Figure 1",
-            "Mean pre–post change by skill with 95% confidence intervals (points on the 0–100 institutional scale).",
+            "Mean Pre (PYP exit) and Post (graduation) scores by skill with 95% confidence intervals of the mean (points on the 0–100 institutional scale). Listening and Speaking decline; Reading and Writing do not decline significantly. PYP pass threshold = 60.",
             note="Positive values indicate attrition. Listening and Speaking (oral–aural) decline significantly; "
             "Reading and Writing do not. PYP pass threshold = 60. Error bars are 95% CIs for mean differences "
             "(Nicol & Pexman, 2010b).",

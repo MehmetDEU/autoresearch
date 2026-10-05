@@ -9,8 +9,16 @@ Institutional skill and overall scores are on a **0–100** scale. The Preparato
 
 ## Publication figures (`outputs/figures/`)
 
-1. `fig1_skill_mean_decline.png` — mean pre−post change by skill with 95% CI (oral–aural decline vs non-significant written change).
+1. `fig1_skill_mean_decline.png` — **grouped Pre vs Post mean scores** by skill (with 95% CI). Listening/Speaking post bars are lower; Reading/Writing are not. Signed-difference bars were retired because readers misread + as gain.
 2. `fig2_golem_speaking_paths.png` — Speaking decline associated with underrating gap and translanguaging exposure.
+
+## Tableau / RStudio companions for Figure 1
+
+- `outputs/tableau/fig1_skill_prepost_dumbbell.png` — Tableau-style dumbbell (Pre → Post).
+- `outputs/tableau/fig1_skill_prepost_tableau.csv` — long data for Tableau Public.
+- `outputs/tableau/fig1_skill_prepost_wide_tableau.csv` — wide summary for Tableau.
+- `rstudio/fig1_skill_prepost.R` — ggplot2 script (run in RStudio).
+- `outputs/rstudio/fig1_skill_prepost_ggplot.png` — R ggplot2 grouped-bar output.
 
 ## Tables (not figured)
 
@@ -28,4 +36,5 @@ Rebuild publication figures:
 
 ```bash
 python make_styled_figures.py
+Rscript rstudio/fig1_skill_prepost.R
 ```

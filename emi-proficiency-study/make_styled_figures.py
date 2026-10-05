@@ -438,28 +438,39 @@ def make_rstudio_prepost(s: pd.DataFrame) -> Path:
     return save_ggplot(p, RST / "rstudio_skill_violins.png")
 
 
-def make_fig1_skill_decline(s: pd.DataFrame, outdir: Path) -> Path:
-    """Publication Figure 1: mean skill change with 95% CI (the paired finding)."""
+def _skill_prepost_summary(s: pd.DataFrame) -> pd.DataFrame:
+    """Mean Pre/Post with 95% CI of the mean and paired p for each skill."""
     rows = []
     for skill in ["Listening", "Reading", "Writing", "Speaking", "Overall"]:
+        pre = s[f"Pre_{skill}"]
+        post = s[f"Post_{skill}"]
         d = s[f"Decline_{skill}"]
-        t = stats.ttest_rel(s[f"Pre_{skill}"], s[f"Post_{skill}"])
-        se = d.std(ddof=1) / np.sqrt(len(d))
-        ci = stats.t.interval(0.95, len(d) - 1, loc=d.mean(), scale=se)
+        t = stats.ttest_rel(pre, post)
+        se_pre = pre.std(ddof=1) / np.sqrt(len(pre))
+        se_post = post.std(ddof=1) / np.sqrt(len(post))
+        ci_pre = stats.t.interval(0.95, len(pre) - 1, loc=pre.mean(), scale=se_pre)
+        ci_post = stats.t.interval(0.95, len(post) - 1, loc=post.mean(), scale=se_post)
         if skill in {"Listening", "Speaking"}:
             family = "Oral–aural"
         elif skill in {"Reading", "Writing"}:
             family = "Written"
         else:
             family = "Overall"
+        direction = "decline" if d.mean() > 0 else "gain"
         rows.append(
             {
                 "Skill": skill,
-                "Mean_decline": float(d.mean()),
-                "lo": float(ci[0]),
-                "hi": float(ci[1]),
-                "p": float(t.pvalue),
                 "Family": family,
+                "Pre_Mean": float(pre.mean()),
+                "Pre_lo": float(ci_pre[0]),
+                "Pre_hi": float(ci_pre[1]),
+                "Post_Mean": float(post.mean()),
+                "Post_lo": float(ci_post[0]),
+                "Post_hi": float(ci_post[1]),
+                "Mean_decline": float(d.mean()),
+                "Direction": direction,
+                "p": float(t.pvalue),
+                "Sig": "p < .001" if t.pvalue < 0.001 else f"p = {t.pvalue:.2f}",
             }
         )
     df = pd.DataFrame(rows)
@@ -468,23 +479,133 @@ def make_fig1_skill_decline(s: pd.DataFrame, outdir: Path) -> Path:
         categories=["Listening", "Reading", "Writing", "Speaking", "Overall"],
         ordered=True,
     )
+    return df
 
-    fig, ax = plt.subplots(figsize=(8.4, 5.4), facecolor="white")
+
+def export_fig1_tableau_csv(s: pd.DataFrame, outdir: Path) -> Path:
+    """Long-format CSV ready to open in Tableau (or Tableau Public)."""
+    summary = _skill_prepost_summary(s)
+    long_rows = []
+    for _, row in summary.iterrows():
+        for time_label, mean_key, lo_key, hi_key in [
+            ("Pre (PYP exit)", "Pre_Mean", "Pre_lo", "Pre_hi"),
+            ("Post (graduation)", "Post_Mean", "Post_lo", "Post_hi"),
+        ]:
+            long_rows.append(
+                {
+                    "Skill": row["Skill"],
+                    "Skill_family": row["Family"],
+                    "Time": time_label,
+                    "Mean_score": row[mean_key],
+                    "CI95_lo": row[lo_key],
+                    "CI95_hi": row[hi_key],
+                    "Mean_decline_pre_minus_post": row["Mean_decline"],
+                    "Direction": row["Direction"],
+                    "Paired_p_label": row["Sig"],
+                    "Scale": "0–100 institutional",
+                    "PYP_pass_threshold": 60,
+                    "N": len(s),
+                }
+            )
+    long = pd.DataFrame(long_rows)
+    outdir.mkdir(parents=True, exist_ok=True)
+    path = outdir / "fig1_skill_prepost_tableau.csv"
+    long.to_csv(path, index=False)
+    # Also wide summary for dumbbell charts in Tableau
+    wide_path = outdir / "fig1_skill_prepost_wide_tableau.csv"
+    summary.to_csv(wide_path, index=False)
+    return path
+
+
+def make_fig1_skill_decline(s: pd.DataFrame, outdir: Path) -> Path:
+    """Publication Figure 1: grouped Pre vs Post means (direction is unambiguous).
+
+    Replaces the signed-difference bar chart, which readers often misread
+    (bars above zero looked like gains even when they encoded attrition).
+    """
+    df = _skill_prepost_summary(s)
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    # --- Primary publication figure: grouped Pre / Post bars ---
+    fig, ax = plt.subplots(figsize=(9.2, 5.8), facecolor="white")
     ax.set_facecolor("white")
-    colors = {"Oral–aural": "#E15759", "Written": "#76B7B2", "Overall": "#4E79A7"}
-    for i, row in df.iterrows():
-        ax.bar(i, row["Mean_decline"], color=colors[row["Family"]], edgecolor="#222222", linewidth=0.7, width=0.7)
-        ax.plot([i, i], [row["lo"], row["hi"]], color="#222222", lw=1.2)
-        ax.plot([i - 0.12, i + 0.12], [row["lo"], row["lo"]], color="#222222", lw=1.2)
-        ax.plot([i - 0.12, i + 0.12], [row["hi"], row["hi"]], color="#222222", lw=1.2)
-        ptxt = "p<.001" if row["p"] < 0.001 else f"p={row['p']:.3f}"
-        ax.text(i, row["hi"] + 0.08, ptxt, ha="center", va="bottom", fontsize=8, color="#333333")
-    ax.axhline(0, color="#222222", lw=0.8)
-    ax.set_xticks(range(len(df)))
-    ax.set_xticklabels(df["Skill"])
-    ax.set_ylabel("Mean change in points (pre − post)\non the 0–100 institutional scale")
+    x = np.arange(len(df))
+    width = 0.36
+    pre_color, post_color = "#4E79A7", "#F28E2B"
+
+    pre_bars = ax.bar(
+        x - width / 2,
+        df["Pre_Mean"],
+        width,
+        color=pre_color,
+        edgecolor="#222222",
+        linewidth=0.6,
+        label="Pre (PYP exit)",
+        zorder=3,
+    )
+    post_bars = ax.bar(
+        x + width / 2,
+        df["Post_Mean"],
+        width,
+        color=post_color,
+        edgecolor="#222222",
+        linewidth=0.6,
+        label="Post (graduation)",
+        zorder=3,
+    )
+
+    # 95% CI of the mean
+    ax.errorbar(
+        x - width / 2,
+        df["Pre_Mean"],
+        yerr=[df["Pre_Mean"] - df["Pre_lo"], df["Pre_hi"] - df["Pre_Mean"]],
+        fmt="none",
+        ecolor="#222222",
+        elinewidth=1.1,
+        capsize=3,
+        zorder=4,
+    )
+    ax.errorbar(
+        x + width / 2,
+        df["Post_Mean"],
+        yerr=[df["Post_Mean"] - df["Post_lo"], df["Post_hi"] - df["Post_Mean"]],
+        fmt="none",
+        ecolor="#222222",
+        elinewidth=1.1,
+        capsize=3,
+        zorder=4,
+    )
+
+    # Direction annotations above each skill pair
+    for i, (_, row) in enumerate(df.iterrows()):
+        delta = row["Mean_decline"]
+        if delta > 0.05:
+            label = f"↓ {delta:.1f}  {row['Sig']}"
+            color = "#C0392B"
+        elif delta < -0.05:
+            label = f"↑ {abs(delta):.1f}  {row['Sig']}"
+            color = "#1E8449"
+        else:
+            label = f"≈ 0  {row['Sig']}"
+            color = "#555555"
+        ax.text(
+            i,
+            max(row["Pre_hi"], row["Post_hi"]) + 0.55,
+            label,
+            ha="center",
+            va="bottom",
+            fontsize=8,
+            color=color,
+            fontweight="bold",
+        )
+
+    ax.axhline(60, color="#888888", ls="--", lw=1.1, label="PYP pass threshold = 60", zorder=2)
+    ax.set_xticks(x)
+    ax.set_xticklabels(list(df["Skill"]))
+    ax.set_ylabel("Mean score on the 0–100 institutional scale")
+    ax.set_ylim(55, max(df["Pre_hi"].max(), df["Post_hi"].max()) + 4.5)
     ax.set_title(
-        "Figure 1. Mean pre–post change by skill (N = 120)",
+        "Figure 1. Mean Pre and Post scores by skill (N = 120)",
         loc="left",
         fontsize=12,
         fontweight="bold",
@@ -492,7 +613,9 @@ def make_fig1_skill_decline(s: pd.DataFrame, outdir: Path) -> Path:
     ax.text(
         0.0,
         1.02,
-        "Positive = attrition; negative = gain. Scores are out of 100; PYP pass threshold = 60 (≈ CEFR B1).",
+        "Grouped bars show Pre (PYP exit) vs Post (graduation). "
+        "Listening and Speaking fall; Reading and Writing do not decline significantly. "
+        "Error bars = 95% CI of the mean.",
         transform=ax.transAxes,
         fontsize=8.5,
         color="#555555",
@@ -502,15 +625,88 @@ def make_fig1_skill_decline(s: pd.DataFrame, outdir: Path) -> Path:
     ax.spines["right"].set_visible(False)
     for spine in ("left", "bottom"):
         ax.spines[spine].set_color("#222222")
-    ax.grid(True, axis="y", color="#D9D9D9", linewidth=0.7)
+    ax.grid(True, axis="y", color="#D9D9D9", linewidth=0.7, zorder=0)
     ax.set_axisbelow(True)
-    handles = [mpatches.Patch(color=c, label=k) for k, c in colors.items()]
-    ax.legend(handles=handles, frameon=True, fancybox=False, edgecolor="#222222", fontsize=8, title="Skill family")
-    outdir.mkdir(parents=True, exist_ok=True)
+    ax.legend(frameon=True, fancybox=False, edgecolor="#222222", fontsize=8, loc="lower right")
+    _ = (pre_bars, post_bars)
+
     path = outdir / "fig1_skill_mean_decline.png"
     fig.tight_layout()
     fig.savefig(path, dpi=160)
     plt.close(fig)
+
+    # --- Tableau-style dumbbell companion (same data, clearer Pre→Post slope) ---
+    tab_dir = outdir.parent / "tableau"
+    tab_dir.mkdir(parents=True, exist_ok=True)
+    export_fig1_tableau_csv(s, tab_dir)
+
+    fig2, ax2 = plt.subplots(figsize=(8.8, 5.6), facecolor=T["bg"])
+    ax2.set_facecolor(T["card"])
+    for i, (_, row) in enumerate(df.iterrows()):
+        decline = row["Mean_decline"] > 0.05
+        line_c = T["red"] if decline else T["green"]
+        ax2.plot(
+            [row["Pre_Mean"], row["Post_Mean"]],
+            [i, i],
+            color=line_c,
+            lw=2.4,
+            zorder=2,
+            solid_capstyle="round",
+        )
+        ax2.scatter(row["Pre_Mean"], i, s=90, color=pre_color, edgecolors="#222222", linewidths=0.6, zorder=3, label="Pre" if i == 0 else None)
+        ax2.scatter(row["Post_Mean"], i, s=90, color=post_color, edgecolors="#222222", linewidths=0.6, zorder=3, label="Post" if i == 0 else None)
+        # arrow tip near Post for declines
+        if decline:
+            ax2.annotate(
+                "",
+                xy=(row["Post_Mean"], i),
+                xytext=(row["Pre_Mean"], i),
+                arrowprops={"arrowstyle": "->", "color": line_c, "lw": 1.8},
+                zorder=2,
+            )
+        delta = row["Mean_decline"]
+        tag = f"↓ {delta:.1f}" if delta > 0.05 else (f"↑ {abs(delta):.1f}" if delta < -0.05 else "≈ 0")
+        ax2.text(
+            max(row["Pre_Mean"], row["Post_Mean"]) + 0.45,
+            i,
+            f"{tag}  ({row['Sig']})",
+            va="center",
+            fontsize=8.5,
+            color=line_c,
+            fontweight="bold",
+        )
+    ax2.axvline(60, color="#888888", ls="--", lw=1.1, label="Threshold 60")
+    ax2.set_yticks(range(len(df)))
+    ax2.set_yticklabels(list(df["Skill"]))
+    ax2.set_xlabel("Mean score (0–100)")
+    ax2.set_xlim(56, 78)
+    ax2.set_title(
+        "Figure 1 (Tableau-style dumbbell). Pre → Post mean scores by skill",
+        loc="left",
+        fontsize=12,
+        fontweight="bold",
+        color=T["header"],
+    )
+    ax2.text(
+        0.0,
+        1.03,
+        "Left/right dots = Pre / Post. Red arrows = attrition (Listening, Speaking). "
+        "Green segments = slight non-significant gains (Reading, Writing).",
+        transform=ax2.transAxes,
+        fontsize=8.5,
+        color=T["muted"],
+        va="bottom",
+    )
+    ax2.grid(True, axis="x", color=T["grid"], linewidth=0.8)
+    ax2.set_axisbelow(True)
+    for spine in ax2.spines.values():
+        spine.set_color("#DDDDDD")
+    ax2.legend(frameon=True, fancybox=False, edgecolor="#222222", fontsize=8, loc="lower right")
+    dumbbell = tab_dir / "fig1_skill_prepost_dumbbell.png"
+    fig2.tight_layout()
+    fig2.savefig(dumbbell, dpi=160)
+    plt.close(fig2)
+
     return path
 
 
@@ -747,10 +943,19 @@ def main() -> None:
         "",
         "## Publication figures (`outputs/figures/`)",
         "",
-        "1. `fig1_skill_mean_decline.png` — mean pre−post change by skill with 95% CI "
-        "(oral–aural decline vs non-significant written change).",
+        "1. `fig1_skill_mean_decline.png` — **grouped Pre vs Post mean scores** by skill "
+        "(with 95% CI). Listening/Speaking post bars are lower; Reading/Writing are not. "
+        "Signed-difference bars were retired because readers misread + as gain.",
         "2. `fig2_golem_speaking_paths.png` — Speaking decline associated with underrating gap "
         "and translanguaging exposure.",
+        "",
+        "## Tableau / RStudio companions for Figure 1",
+        "",
+        "- `outputs/tableau/fig1_skill_prepost_dumbbell.png` — Tableau-style dumbbell (Pre → Post).",
+        "- `outputs/tableau/fig1_skill_prepost_tableau.csv` — long data for Tableau Public.",
+        "- `outputs/tableau/fig1_skill_prepost_wide_tableau.csv` — wide summary for Tableau.",
+        "- `rstudio/fig1_skill_prepost.R` — ggplot2 script (run in RStudio).",
+        "- `outputs/rstudio/fig1_skill_prepost_ggplot.png` — R ggplot2 grouped-bar output.",
         "",
         "## Tables (not figured)",
         "",
@@ -768,6 +973,7 @@ def main() -> None:
         "",
         "```bash",
         "python make_styled_figures.py",
+        "Rscript rstudio/fig1_skill_prepost.R",
         "```",
         "",
     ]
