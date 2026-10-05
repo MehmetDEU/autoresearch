@@ -438,13 +438,20 @@ def make_rstudio_prepost(s: pd.DataFrame) -> Path:
     return save_ggplot(p, RST / "rstudio_skill_violins.png")
 
 
-def make_rstudio_decline_bars(s: pd.DataFrame) -> Path:
+def make_fig1_skill_decline(s: pd.DataFrame, outdir: Path) -> Path:
+    """Publication Figure 1: mean skill change with 95% CI (the paired finding)."""
     rows = []
     for skill in ["Listening", "Reading", "Writing", "Speaking", "Overall"]:
         d = s[f"Decline_{skill}"]
         t = stats.ttest_rel(s[f"Pre_{skill}"], s[f"Post_{skill}"])
         se = d.std(ddof=1) / np.sqrt(len(d))
         ci = stats.t.interval(0.95, len(d) - 1, loc=d.mean(), scale=se)
+        if skill in {"Listening", "Speaking"}:
+            family = "Oral–aural"
+        elif skill in {"Reading", "Writing"}:
+            family = "Written"
+        else:
+            family = "Overall"
         rows.append(
             {
                 "Skill": skill,
@@ -452,29 +459,45 @@ def make_rstudio_decline_bars(s: pd.DataFrame) -> Path:
                 "lo": float(ci[0]),
                 "hi": float(ci[1]),
                 "p": float(t.pvalue),
-                "Family": "Productive" if skill in {"Writing", "Speaking"} else ("Overall" if skill == "Overall" else "Receptive"),
+                "Family": family,
             }
         )
     df = pd.DataFrame(rows)
-    df["Skill"] = pd.Categorical(df["Skill"], categories=["Listening", "Reading", "Writing", "Speaking", "Overall"], ordered=True)
-    df["ymin"] = df["Mean_decline"] - (df["Mean_decline"] - df["lo"])
-    df["ymax"] = df["hi"]
+    df["Skill"] = pd.Categorical(
+        df["Skill"],
+        categories=["Listening", "Reading", "Writing", "Speaking", "Overall"],
+        ordered=True,
+    )
 
-    # plotnine has no built-in geom_errorbar convenience here for all versions; use annotate segments via matplotlib hybrid
-    fig, ax = plt.subplots(figsize=(8.2, 5.2), facecolor="white")
+    fig, ax = plt.subplots(figsize=(8.4, 5.4), facecolor="white")
     ax.set_facecolor("white")
-    colors = {"Receptive": "#76B7B2", "Productive": "#F28E2B", "Overall": "#4E79A7"}
+    colors = {"Oral–aural": "#E15759", "Written": "#76B7B2", "Overall": "#4E79A7"}
     for i, row in df.iterrows():
         ax.bar(i, row["Mean_decline"], color=colors[row["Family"]], edgecolor="#222222", linewidth=0.7, width=0.7)
         ax.plot([i, i], [row["lo"], row["hi"]], color="#222222", lw=1.2)
         ax.plot([i - 0.12, i + 0.12], [row["lo"], row["lo"]], color="#222222", lw=1.2)
         ax.plot([i - 0.12, i + 0.12], [row["hi"], row["hi"]], color="#222222", lw=1.2)
-        ax.text(i, row["hi"] + 0.06, f"p={row['p']:.3f}", ha="center", va="bottom", fontsize=8, color="#333333")
+        ptxt = "p<.001" if row["p"] < 0.001 else f"p={row['p']:.3f}"
+        ax.text(i, row["hi"] + 0.08, ptxt, ha="center", va="bottom", fontsize=8, color="#333333")
     ax.axhline(0, color="#222222", lw=0.8)
     ax.set_xticks(range(len(df)))
     ax.set_xticklabels(df["Skill"])
-    ax.set_ylabel("Mean decline (pre − post)")
-    ax.set_title("Mean skill decline with 95% CI\nggplot2 / RStudio style  ·  SYNTHETIC", loc="left", fontsize=12, fontweight="bold")
+    ax.set_ylabel("Mean change in points (pre − post)\non the 0–100 institutional scale")
+    ax.set_title(
+        "Figure 1. Mean pre–post change by skill (N = 120)",
+        loc="left",
+        fontsize=12,
+        fontweight="bold",
+    )
+    ax.text(
+        0.0,
+        1.02,
+        "Positive = attrition; negative = gain. Scores are out of 100; PYP pass threshold = 60 (≈ CEFR B1).",
+        transform=ax.transAxes,
+        fontsize=8.5,
+        color="#555555",
+        va="bottom",
+    )
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     for spine in ("left", "bottom"):
@@ -483,17 +506,18 @@ def make_rstudio_decline_bars(s: pd.DataFrame) -> Path:
     ax.set_axisbelow(True)
     handles = [mpatches.Patch(color=c, label=k) for k, c in colors.items()]
     ax.legend(handles=handles, frameon=True, fancybox=False, edgecolor="#222222", fontsize=8, title="Skill family")
-    RST.mkdir(parents=True, exist_ok=True)
-    path = RST / "rstudio_skill_decline_ci.png"
+    outdir.mkdir(parents=True, exist_ok=True)
+    path = outdir / "fig1_skill_mean_decline.png"
     fig.tight_layout()
-    fig.savefig(path, dpi=150)
+    fig.savefig(path, dpi=160)
     plt.close(fig)
     return path
 
 
-def make_rstudio_mechanism(s: pd.DataFrame) -> Path:
-    path_u = "1. Underrating gap (actual − lecturer estimate)"
-    path_t = "2. Translanguaging exposure (% class time in Turkish)"
+def make_fig2_golem_paths(s: pd.DataFrame, outdir: Path) -> Path:
+    """Publication Figure 2: Speaking decline × underrating and translanguaging."""
+    path_u = "A. Underrating gap\n(actual PYP score − lecturer estimate)"
+    path_t = "B. Translanguaging exposure\n(% of class time in Turkish)"
     long = pd.DataFrame(
         {
             "x": np.concatenate([s["Underrating_Gap"], s["TL_percent"]]),
@@ -509,15 +533,26 @@ def make_rstudio_mechanism(s: pd.DataFrame) -> Path:
         + geom_hline(yintercept=0, linetype="dotted", color="#666666")
         + facet_wrap("~Path", scales="free_x", nrow=1)
         + labs(
-            title="Speaking attrition tracks underrating and translanguaging",
-            subtitle="Primary outcome = Speaking decline  ·  ggplot2 / RStudio style  ·  SYNTHETIC N = 120",
+            title="Figure 2. Speaking decline associated with underrating and translanguaging",
+            subtitle="Speaking change in points on the 0–100 scale (pre − post). PYP pass threshold = 60. SYNTHETIC N = 120.",
             x="Predictor",
-            y="Speaking decline (pre − post)",
+            y="Speaking decline (points on 0–100 scale)",
         )
         + theme_rstudio()
-        + theme(figure_size=(10.5, 5.0))
+        + theme(figure_size=(10.5, 5.2))
     )
-    return save_ggplot(p, RST / "rstudio_golem_paths.png")
+    outdir.mkdir(parents=True, exist_ok=True)
+    return save_ggplot(p, outdir / "fig2_golem_speaking_paths.png")
+
+
+def make_rstudio_decline_bars(s: pd.DataFrame) -> Path:
+    """Archive alias — kept for optional --archive builds."""
+    return make_fig1_skill_decline(s, RST)
+
+
+def make_rstudio_mechanism(s: pd.DataFrame) -> Path:
+    """Archive alias — kept for optional --archive builds."""
+    return make_fig2_golem_paths(s, RST)
 
 
 def make_rstudio_paired_slope(s: pd.DataFrame) -> Path:
@@ -662,50 +697,74 @@ def copy_artifacts(paths: list[Path]) -> None:
 
 
 def main() -> None:
-    s, lect, ielts = load()
-    TAB.mkdir(parents=True, exist_ok=True)
-    RST.mkdir(parents=True, exist_ok=True)
+    import sys
 
+    archive = "--archive" in sys.argv
+    s, lect, ielts = load()
+    FIG = OUT / "figures"
+    FIG.mkdir(parents=True, exist_ok=True)
+
+    # Only two figures are statistically central for the manuscript:
+    # (1) paired skill change with CIs; (2) Speaking decline × mechanism predictors.
+    # Everything else stays in tables (descriptives, paired tests, correlations, OLS, psychometrics).
     paths = [
-        make_tableau_dashboard(s, lect),
-        make_tableau_lecturer_dashboard(s, lect),
-        make_tableau_demographics(s),
-        make_rstudio_prepost(s),
-        make_rstudio_decline_bars(s),
-        make_rstudio_mechanism(s),
-        make_rstudio_paired_slope(s),
-        make_rstudio_corr_heatmap(s),
-        make_rstudio_ielts(s, ielts),
-        make_rstudio_hist_diff(s),
+        make_fig1_skill_decline(s, FIG),
+        make_fig2_golem_paths(s, FIG),
     ]
-    copy_artifacts(paths)
+
+    if archive:
+        ARCH = OUT / "archive"
+        TAB.mkdir(parents=True, exist_ok=True)
+        RST.mkdir(parents=True, exist_ok=True)
+        ARCH.mkdir(parents=True, exist_ok=True)
+        extras = [
+            make_tableau_dashboard(s, lect),
+            make_tableau_lecturer_dashboard(s, lect),
+            make_tableau_demographics(s),
+            make_rstudio_prepost(s),
+            make_rstudio_paired_slope(s),
+            make_rstudio_corr_heatmap(s),
+            make_rstudio_ielts(s, ielts),
+            make_rstudio_hist_diff(s),
+        ]
+        for p in extras:
+            dest = ARCH / p.name
+            dest.write_bytes(p.read_bytes())
+            paths.append(dest)
+
+    copy_artifacts(paths[:2])
     index = ROOT / "FIGURES.md"
     lines = [
-        "# Styled figures",
+        "# Figures (publication set)",
         "",
-        "Generated from the synthetic Excel panel. Two visual languages:",
+        "Only figures that carry a primary inferential claim are retained for the manuscript.",
+        "All other results are reported in tables.",
         "",
-        "## Tableau-style (`outputs/tableau/`)",
+        "## Scale",
         "",
-        "KPI cards, clean dashboard chrome, Tableau 10 colours, left-aligned titles.",
+        "Institutional skill and overall scores are on a **0–100** scale. "
+        "The Preparatory Year Programme pass threshold is **60/100** (interpreted as CEFR B1).",
         "",
-    ]
-    for p in paths:
-        if "tableau" in str(p):
-            lines.append(f"- `{p.relative_to(ROOT)}`")
-    lines += [
+        "## Publication figures (`outputs/figures/`)",
         "",
-        "## ggplot2 / RStudio-style (`outputs/rstudio/`)",
+        "1. `fig1_skill_mean_decline.png` — mean pre−post change by skill with 95% CI "
+        "(oral–aural decline vs non-significant written change).",
+        "2. `fig2_golem_speaking_paths.png` — Speaking decline associated with underrating gap "
+        "and translanguaging exposure.",
         "",
-        "White panels, light grey grids, black axes, facet strips — the look you get from `ggplot2` + `theme_bw()` / `theme_minimal()` in RStudio.",
+        "## Tables (not figured)",
         "",
-    ]
-    for p in paths:
-        if "rstudio" in str(p):
-            lines.append(f"- `{p.relative_to(ROOT)}`")
-    lines += [
+        "- Descriptives, paired *t*/Wilcoxon by skill, reliability/ICC/IELTS validity",
+        "- Correlations with Speaking decline, OLS coefficients, mediation quantities",
+        "- Sample composition and lecturer-level exploratory summaries",
         "",
-        "Rebuild:",
+        "Optional exploratory dashboards (not for the paper):",
+        "",
+        "```bash",
+        "python make_styled_figures.py --archive",
+        "```",
+        "",
+        "Rebuild publication figures:",
         "",
         "```bash",
         "python make_styled_figures.py",
@@ -713,7 +772,7 @@ def main() -> None:
         "",
     ]
     index.write_text("\n".join(lines), encoding="utf-8")
-    print("wrote", len(paths), "figures")
+    print("wrote", len(paths), "figure(s)" + (" including archive" if archive else " (publication set)"))
     for p in paths:
         print(" ", p)
 

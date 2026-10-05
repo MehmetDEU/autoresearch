@@ -1364,77 +1364,72 @@ def write_workbook(bundle: dict, analysis: dict, xlsx_path: Path) -> None:
 
 
 def make_figures(bundle: dict, analysis: dict, outdir: Path) -> list[Path]:
+    """Keep only the two manuscript-worthy plots; other results stay in tables."""
     outdir.mkdir(parents=True, exist_ok=True)
+    pub = outdir / "figures"
+    pub.mkdir(parents=True, exist_ok=True)
     s = bundle["students"]
     paths = []
     plt.rcParams.update({"font.size": 11, "figure.facecolor": "white"})
 
-    fig, ax = plt.subplots(figsize=(8.2, 5.2))
-    data = [s["Pre_Overall"], s["Post_Overall"]]
-    bp = ax.boxplot(data, tick_labels=["Pre (PYP exit)", "Post (graduation)"], patch_artist=True, widths=0.55)
-    for patch, color in zip(bp["boxes"], ["#5B9BD5", "#ED7D31"]):
-        patch.set_facecolor(color)
-        patch.set_alpha(0.75)
-    ax.axhline(60, color="#C00000", ls="--", lw=1, label="B1 threshold (60)")
-    ax.set_ylabel("Institutional overall score (0–100)")
-    ax.set_title("Pre–post overall proficiency (synthetic N = 120)")
-    ax.legend(frameon=False)
+    # Figure 1 — skill mean change with 95% CI
+    fig, ax = plt.subplots(figsize=(8.4, 5.4))
+    skills = ["Listening", "Reading", "Writing", "Speaking", "Overall"]
+    means = [analysis["paired"][sk]["mean_decline"] for sk in skills]
+    cis = np.array(
+        [
+            [
+                analysis["paired"][sk]["mean_decline"] - analysis["paired"][sk]["ci95_lo"],
+                analysis["paired"][sk]["ci95_hi"] - analysis["paired"][sk]["mean_decline"],
+            ]
+            for sk in skills
+        ]
+    ).T
+    colors = ["#E15759", "#76B7B2", "#76B7B2", "#E15759", "#4E79A7"]
+    ax.bar(skills, means, color=colors, yerr=cis, capsize=4, edgecolor="#222222", linewidth=0.6)
+    ax.axhline(0, color="black", lw=0.8)
+    ax.set_ylabel("Mean change in points (pre − post)\non the 0–100 institutional scale")
+    ax.set_title("Mean pre–post change by skill (N = 120)")
+    ax.text(
+        0.0,
+        1.02,
+        "Positive = attrition; negative = gain. Scores out of 100; PYP pass threshold = 60 (≈ CEFR B1).",
+        transform=ax.transAxes,
+        fontsize=8.5,
+        color="#555555",
+        va="bottom",
+    )
     fig.tight_layout()
-    p = outdir / "pre_post_overall_boxplot.png"
-    fig.savefig(p, dpi=140)
+    p = pub / "fig1_skill_mean_decline.png"
+    fig.savefig(p, dpi=160)
     plt.close()
     paths.append(p)
 
-    fig, ax = plt.subplots(figsize=(8.2, 5.2))
-    ax.hist(s["Decline_Speaking"], bins=18, color="#E15759", edgecolor="white")
-    ax.axvline(s["Decline_Speaking"].mean(), color="#C00000", ls="--", label=f"Mean Speaking decline = {s['Decline_Speaking'].mean():.2f}")
-    ax.set_xlabel("Pre − Post Speaking (positive = attrition)")
-    ax.set_ylabel("Students")
-    ax.set_title("Speaking difference scores (primary attrition outcome)")
-    ax.legend(frameon=False)
-    fig.tight_layout()
-    p = outdir / "decline_histogram.png"
-    fig.savefig(p, dpi=140)
-    plt.close()
-    paths.append(p)
-
-    fig, axes = plt.subplots(1, 2, figsize=(10.5, 4.8), sharey=True)
+    # Figure 2 — Golem paths to Speaking decline
+    fig, axes = plt.subplots(1, 2, figsize=(10.5, 5.0), sharey=True)
     axes[0].scatter(s["Underrating_Gap"], s["Decline_Speaking"], alpha=0.7, c="#1F4E79", s=28)
     z = np.polyfit(s["Underrating_Gap"], s["Decline_Speaking"], 1)
     xs = np.linspace(s["Underrating_Gap"].min(), s["Underrating_Gap"].max(), 50)
     axes[0].plot(xs, np.polyval(z, xs), color="#C00000", lw=2)
     r = analysis["golem_corr_table"].iloc[0]
-    axes[0].set_xlabel("Underrating gap (actual − lecturer estimate)")
-    axes[0].set_ylabel("Speaking decline")
-    axes[0].set_title(f"Inaccuracy path  r = {r['r']:.2f}, p = {apa_p(r['p'])}")
+    axes[0].set_xlabel("Underrating gap (points on 0–100 scale)")
+    axes[0].set_ylabel("Speaking decline (points on 0–100 scale)")
+    axes[0].set_title(f"A. Inaccuracy path  r = {r['r']:.2f}, p = {apa_p(r['p'])}")
     axes[1].scatter(s["TL_percent"], s["Decline_Speaking"], alpha=0.7, c="#C45911", s=28)
     z = np.polyfit(s["TL_percent"], s["Decline_Speaking"], 1)
     xs = np.linspace(s["TL_percent"].min(), s["TL_percent"].max(), 50)
     axes[1].plot(xs, np.polyval(z, xs), color="#C00000", lw=2)
     r = analysis["golem_corr_table"].iloc[1]
     axes[1].set_xlabel("% of content-course time in Turkish")
-    axes[1].set_title(f"Translanguaging → Speaking  r = {r['r']:.2f}, p = {apa_p(r['p'])}")
-    fig.suptitle("Oral–aural attrition tracks underrating and L1 exposure (not uniform rust)")
+    axes[1].set_title(f"B. Translanguaging path  r = {r['r']:.2f}, p = {apa_p(r['p'])}")
+    fig.suptitle(
+        "Speaking decline associated with underrating and translanguaging\n"
+        "(Speaking change in points on the 0–100 scale; PYP pass threshold = 60)",
+        fontsize=11,
+    )
     fig.tight_layout()
-    p = outdir / "golem_mechanism_scatter.png"
-    fig.savefig(p, dpi=140)
-    plt.close()
-    paths.append(p)
-
-    fig, ax = plt.subplots(figsize=(8.2, 5.2))
-    skills = ["Listening", "Reading", "Writing", "Speaking", "Overall"]
-    means = [analysis["paired"][sk]["mean_decline"] for sk in skills]
-    cis = np.array([[analysis["paired"][sk]["mean_decline"] - analysis["paired"][sk]["ci95_lo"],
-                     analysis["paired"][sk]["ci95_hi"] - analysis["paired"][sk]["mean_decline"]] for sk in skills]).T
-    colors = ["#F28E2B", "#76B7B2", "#59A14F", "#E15759", "#4E79A7"]
-    # Order display: Speaking first visually emphasized via color; keep skill order L/R/W/S/O
-    ax.bar(skills, means, color=colors, yerr=cis, capsize=4)
-    ax.axhline(0, color="black", lw=0.8)
-    ax.set_ylabel("Mean decline (pre − post); negative = gain")
-    ax.set_title("Listening + Speaking decline; Reading/Writing not significantly down")
-    fig.tight_layout()
-    p = outdir / "skill_decline_bars.png"
-    fig.savefig(p, dpi=140)
+    p = pub / "fig2_golem_speaking_paths.png"
+    fig.savefig(p, dpi=160)
     plt.close()
     paths.append(p)
     return paths

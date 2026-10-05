@@ -1,28 +1,30 @@
-# Styled figures
+# Figures (publication set)
 
-Generated from the synthetic Excel panel. Two visual languages:
+Only figures that carry a primary inferential claim are retained for the manuscript.
+All other results are reported in tables.
 
-## Tableau-style (`outputs/tableau/`)
+## Scale
 
-KPI cards, clean dashboard chrome, Tableau 10 colours, left-aligned titles.
+Institutional skill and overall scores are on a **0–100** scale. The Preparatory Year Programme pass threshold is **60/100** (interpreted as CEFR B1).
 
-- `outputs/tableau/tableau_dashboard_overview.png`
-- `outputs/tableau/tableau_lecturer_dose_response.png`
-- `outputs/tableau/tableau_sample_composition.png`
+## Publication figures (`outputs/figures/`)
 
-## ggplot2 / RStudio-style (`outputs/rstudio/`)
+1. `fig1_skill_mean_decline.png` — mean pre−post change by skill with 95% CI (oral–aural decline vs non-significant written change).
+2. `fig2_golem_speaking_paths.png` — Speaking decline associated with underrating gap and translanguaging exposure.
 
-White panels, light grey grids, black axes, facet strips — the look you get from `ggplot2` + `theme_bw()` / `theme_minimal()` in RStudio.
+## Tables (not figured)
 
-- `outputs/rstudio/rstudio_skill_violins.png`
-- `outputs/rstudio/rstudio_skill_decline_ci.png`
-- `outputs/rstudio/rstudio_golem_paths.png`
-- `outputs/rstudio/rstudio_paired_slopegraph.png`
-- `outputs/rstudio/rstudio_mechanism_heatmap.png`
-- `outputs/rstudio/rstudio_ielts_concurrent.png`
-- `outputs/rstudio/rstudio_difference_hist.png`
+- Descriptives, paired *t*/Wilcoxon by skill, reliability/ICC/IELTS validity
+- Correlations with Speaking decline, OLS coefficients, mediation quantities
+- Sample composition and lecturer-level exploratory summaries
 
-Rebuild:
+Optional exploratory dashboards (not for the paper):
+
+```bash
+python make_styled_figures.py --archive
+```
+
+Rebuild publication figures:
 
 ```bash
 python make_styled_figures.py

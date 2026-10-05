@@ -345,7 +345,10 @@ def build() -> Path:
     set_table_style(t1)
     add_para(
         doc,
-        "Note. Decline_* = Pre − Post (positive = attrition; negative = gain). Kurtosis = excess kurtosis.",
+        "Note. Proficiency scores (Pre_*/Post_*) are on the institutional 0–100 scale; "
+        "the Preparatory Year Programme pass threshold was 60/100 (≈ CEFR B1). "
+        "Decline_* = Pre − Post in points on that scale (positive = attrition; negative = gain). "
+        "Kurtosis = excess kurtosis.",
         first_indent=False, italic=True, size=9, space_after=12,
     )
 
@@ -415,26 +418,52 @@ def build() -> Path:
     set_table_style(t2)
     add_para(
         doc,
-        "Note. Positive M change = attrition (lower at graduation); negative = gain. "
-        "d_z = Cohen’s d for paired designs.",
+        "Note. Skill scores are out of 100. The PYP pass threshold was 60/100 (≈ CEFR B1); "
+        "all completers scored ≥ 60 at pretest. Positive M change = attrition (lower at graduation); "
+        "negative = gain. d_z = Cohen’s d for paired designs. Written skills (Reading, Writing) "
+        "show no statistically significant decline and are summarised here rather than in a separate figure.",
         first_indent=False, italic=True, size=9, space_after=12,
     )
 
-    # Embed key figures if present
+    # Embed only the two statistically central figures.
     fig_dir = DESKTOP / "figures"
-    overview_fig = fig_dir / "tableau" / "tableau_dashboard_overview.png"
-    golem_fig = fig_dir / "rstudio" / "rstudio_golem_paths.png"
-    if overview_fig.exists():
-        add_caption(doc, "Figure 1. Tableau-style overview of the pre–post panel and mechanism paths")
-        doc.add_picture(str(overview_fig), width=Inches(6.3))
+    fig1 = fig_dir / "fig1_skill_mean_decline.png"
+    fig2 = fig_dir / "fig2_golem_speaking_paths.png"
+    # Fall back to package outputs if Desktop mirror is missing.
+    if not fig1.exists():
+        fig1 = ROOT / "outputs" / "figures" / "fig1_skill_mean_decline.png"
+    if not fig2.exists():
+        fig2 = ROOT / "outputs" / "figures" / "fig2_golem_speaking_paths.png"
+    if fig1.exists():
+        add_caption(
+            doc,
+            "Figure 1. Mean pre–post change by skill with 95% CI (points on the 0–100 institutional scale; "
+            "PYP pass threshold = 60)",
+        )
+        doc.add_picture(str(fig1), width=Inches(6.0))
         last = doc.paragraphs[-1]
         last.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    if golem_fig.exists():
-        add_caption(doc, "Figure 2. Speaking decline associated with underrating and translanguaging exposure")
-        doc.add_picture(str(golem_fig), width=Inches(6.3))
+        add_para(
+            doc,
+            "Note. Positive values indicate attrition. Listening and Speaking (oral–aural) decline "
+            "significantly; Reading and Writing do not.",
+            first_indent=False, italic=True, size=9, space_after=10,
+        )
+    if fig2.exists():
+        add_caption(
+            doc,
+            "Figure 2. Speaking decline associated with lecturer underrating and translanguaging exposure "
+            "(Speaking change in points on the 0–100 scale)",
+        )
+        doc.add_picture(str(fig2), width=Inches(6.2))
         last = doc.paragraphs[-1]
         last.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
+        add_para(
+            doc,
+            "Note. Other associations (reliability, concurrent validity, OLS coefficients, mediation) "
+            "are reported in Tables 1–4 rather than as additional figures.",
+            first_indent=False, italic=True, size=9, space_after=12,
+        )
     add_heading_styled(doc, "Inaccuracy of lecturer expectancy", level=2)
     pre_act = float(s["Pre_Overall"].mean())
     lect_est = float(s["Lecturer_Est_English"].mean())
@@ -484,7 +513,12 @@ def build() -> Path:
         for i, val in enumerate(vals):
             cells[i].text = val
     set_table_style(t3)
-    add_para(doc, "", first_indent=False, space_after=6)
+    add_para(
+        doc,
+        "Note. Underrating_Gap is in points on the same 0–100 institutional scale "
+        "(actual Pre_Overall − lecturer estimate). Decline_Speaking is likewise in points on 0–100.",
+        first_indent=False, italic=True, size=9, space_after=12,
+    )
 
     add_heading_styled(doc, "Regression models predicting Speaking decline", level=2)
     def _coef(model_name, term):
@@ -521,7 +555,9 @@ def build() -> Path:
     set_table_style(t4)
     add_para(
         doc,
-        "Note. Models also included Pre_Speaking, major, and gender. Full tables are in the Excel workbook (Regression_models).",
+        "Note. Models also included Pre_Speaking, major, and gender. Coefficients for Underrating_Gap "
+        "and Decline_Speaking are in points on the 0–100 institutional scale (PYP pass threshold = 60). "
+        "Full tables are in the Excel workbook (Regression_models).",
         first_indent=False, italic=True, size=9, space_after=12,
     )
 

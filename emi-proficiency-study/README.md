@@ -34,11 +34,16 @@ If underrating and translanguaging predict how much a student drops, *after* con
 - `PSYCHOMETRIC_REPORT.md` — full statistical write-up
 - `HOW_WE_TEST_GOLEM.md` — mechanism (e) in plain language
 - `build_dataset.py` — generator (re-runnable; calibrated random seed)
-- `make_styled_figures.py` — Tableau-style dashboards + ggplot2/RStudio-style plots
-- `FIGURES.md` — index of illustration files
-- `outputs/tableau/` — dashboard-style PNGs
-- `outputs/rstudio/` — ggplot2-look PNGs
-- `outputs/` — CSV extracts and earlier simple figures
+- `make_styled_figures.py` — publication figures only (use `--archive` for exploratory extras)
+- `FIGURES.md` — which two figures to keep and why
+- `outputs/figures/` — **Figure 1** skill mean change; **Figure 2** Golem paths
+- `EMI_Methodology_and_Quantitative_Results.docx` — Methodology + Quantitative Results draft
+
+**Scale reminder:** all skill/overall scores are **out of 100**; the PYP pass threshold is **60** (≈ CEFR B1). That note appears on tables and figure captions.
+
+Everything else (descriptives, paired tests, reliability, correlations, OLS, mediation) stays in **tables**, not extra plots.
+
+CSV extracts remain under `outputs/` (`students.csv`, `lecturers.csv`, `ielts_subsample.csv`).
 
 ## Rebuild
 
