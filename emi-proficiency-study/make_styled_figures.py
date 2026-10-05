@@ -635,77 +635,10 @@ def make_fig1_skill_decline(s: pd.DataFrame, outdir: Path) -> Path:
     fig.savefig(path, dpi=160)
     plt.close(fig)
 
-    # --- Tableau-style dumbbell companion (same data, clearer Pre→Post slope) ---
+    # Tableau-ready CSV only (no dumbbell — manuscript Fig 2 remains the scatter).
     tab_dir = outdir.parent / "tableau"
     tab_dir.mkdir(parents=True, exist_ok=True)
     export_fig1_tableau_csv(s, tab_dir)
-
-    fig2, ax2 = plt.subplots(figsize=(8.8, 5.6), facecolor=T["bg"])
-    ax2.set_facecolor(T["card"])
-    for i, (_, row) in enumerate(df.iterrows()):
-        decline = row["Mean_decline"] > 0.05
-        line_c = T["red"] if decline else T["green"]
-        ax2.plot(
-            [row["Pre_Mean"], row["Post_Mean"]],
-            [i, i],
-            color=line_c,
-            lw=2.4,
-            zorder=2,
-            solid_capstyle="round",
-        )
-        ax2.scatter(row["Pre_Mean"], i, s=90, color=pre_color, edgecolors="#222222", linewidths=0.6, zorder=3, label="Pre" if i == 0 else None)
-        ax2.scatter(row["Post_Mean"], i, s=90, color=post_color, edgecolors="#222222", linewidths=0.6, zorder=3, label="Post" if i == 0 else None)
-        # arrow tip near Post for declines
-        if decline:
-            ax2.annotate(
-                "",
-                xy=(row["Post_Mean"], i),
-                xytext=(row["Pre_Mean"], i),
-                arrowprops={"arrowstyle": "->", "color": line_c, "lw": 1.8},
-                zorder=2,
-            )
-        delta = row["Mean_decline"]
-        tag = f"↓ {delta:.1f}" if delta > 0.05 else (f"↑ {abs(delta):.1f}" if delta < -0.05 else "≈ 0")
-        ax2.text(
-            max(row["Pre_Mean"], row["Post_Mean"]) + 0.45,
-            i,
-            f"{tag}  ({row['Sig']})",
-            va="center",
-            fontsize=8.5,
-            color=line_c,
-            fontweight="bold",
-        )
-    ax2.axvline(60, color="#888888", ls="--", lw=1.1, label="Threshold 60")
-    ax2.set_yticks(range(len(df)))
-    ax2.set_yticklabels(list(df["Skill"]))
-    ax2.set_xlabel("Mean score (0–100)")
-    ax2.set_xlim(56, 78)
-    ax2.set_title(
-        "Figure 1 (Tableau-style dumbbell). Pre → Post mean scores by skill",
-        loc="left",
-        fontsize=12,
-        fontweight="bold",
-        color=T["header"],
-    )
-    ax2.text(
-        0.0,
-        1.03,
-        "Left/right dots = Pre / Post. Red arrows = attrition (Listening, Speaking). "
-        "Green segments = slight non-significant gains (Reading, Writing).",
-        transform=ax2.transAxes,
-        fontsize=8.5,
-        color=T["muted"],
-        va="bottom",
-    )
-    ax2.grid(True, axis="x", color=T["grid"], linewidth=0.8)
-    ax2.set_axisbelow(True)
-    for spine in ax2.spines.values():
-        spine.set_color("#DDDDDD")
-    ax2.legend(frameon=True, fancybox=False, edgecolor="#222222", fontsize=8, loc="lower right")
-    dumbbell = tab_dir / "fig1_skill_prepost_dumbbell.png"
-    fig2.tight_layout()
-    fig2.savefig(dumbbell, dpi=160)
-    plt.close(fig2)
 
     return path
 
@@ -951,11 +884,12 @@ def main() -> None:
         "",
         "## Tableau / RStudio companions for Figure 1",
         "",
-        "- `outputs/tableau/fig1_skill_prepost_dumbbell.png` — Tableau-style dumbbell (Pre → Post).",
         "- `outputs/tableau/fig1_skill_prepost_tableau.csv` — long data for Tableau Public.",
         "- `outputs/tableau/fig1_skill_prepost_wide_tableau.csv` — wide summary for Tableau.",
-        "- `rstudio/fig1_skill_prepost.R` — ggplot2 script (run in RStudio).",
+        "- `rstudio/fig1_skill_prepost.R` — ggplot2 grouped Pre/Post bars (run in RStudio).",
         "- `outputs/rstudio/fig1_skill_prepost_ggplot.png` — R ggplot2 grouped-bar output.",
+        "",
+        "Publication Figure 2 remains the two-panel **scatter** (`fig2_golem_speaking_paths.png`).",
         "",
         "## Tables (not figured)",
         "",

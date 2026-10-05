@@ -125,43 +125,4 @@ dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 outfile <- file.path(outdir, "fig1_skill_prepost_ggplot.png")
 ggsave(outfile, p, width = 9.2, height = 5.8, dpi = 160)
 message("Wrote ", outfile)
-
-# Dumbbell companion
-wide <- long %>%
-  select(Skill, Time, Mean, Delta, Sig) %>%
-  pivot_wider(names_from = Time, values_from = Mean)
-
-# restore names after pivot (spaces become awkward)
-names(wide) <- gsub(" ", "_", names(wide))
-# safer rebuild
-wide <- long %>%
-  group_by(Skill) %>%
-  summarise(
-    Pre = Mean[Time == "Pre (PYP exit)"],
-    Post = Mean[Time == "Post (graduation)"],
-    Delta = first(Delta),
-    Sig = first(Sig),
-    .groups = "drop"
-  )
-
-pd <- ggplot(wide, aes(y = Skill)) +
-  geom_segment(aes(x = Pre, xend = Post, yend = Skill,
-                   colour = ifelse(Delta > 0.05, "decline", "gain_or_flat")),
-               linewidth = 1.2) +
-  geom_point(aes(x = Pre), colour = "#4E79A7", size = 3.2) +
-  geom_point(aes(x = Post), colour = "#F28E2B", size = 3.2) +
-  geom_vline(xintercept = 60, linetype = "dashed", colour = "#888888") +
-  scale_colour_manual(values = c(decline = "#C0392B", gain_or_flat = "#1E8449"),
-                      guide = "none") +
-  labs(
-    title = "Figure 1 (RStudio dumbbell). Pre → Post mean scores",
-    x = "Mean score (0–100)",
-    y = NULL,
-    caption = "Blue = Pre; orange = Post. Red = attrition path."
-  ) +
-  theme_bw(base_size = 11) +
-  theme(plot.title = element_text(face = "bold"))
-
-dumbbell <- file.path(outdir, "fig1_skill_prepost_dumbbell_ggplot.png")
-ggsave(dumbbell, pd, width = 8.5, height = 5.2, dpi = 160)
-message("Wrote ", dumbbell)
+# Dumbbell companion intentionally omitted — manuscript Figure 2 is the scatter plot.

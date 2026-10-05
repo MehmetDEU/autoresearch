@@ -199,6 +199,4 @@ Nicol, A. A. M., & Pexman, P. M. (2010b). Displaying your findings: A practical 
 
 ![Figure 1. Mean Pre vs Post scores by skill (grouped bars)](outputs/figures/fig1_skill_mean_decline.png)
 
-![Figure 1 Tableau-style dumbbell](outputs/tableau/fig1_skill_prepost_dumbbell.png)
-
-![Figure 2. Speaking decline against Underrating Gap and TL%](outputs/figures/fig2_golem_speaking_paths.png)
+![Figure 2. Speaking decline against Underrating Gap and TL% (scatter)](outputs/figures/fig2_golem_speaking_paths.png)

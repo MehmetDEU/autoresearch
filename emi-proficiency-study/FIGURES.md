@@ -14,11 +14,12 @@ Institutional skill and overall scores are on a **0–100** scale. The Preparato
 
 ## Tableau / RStudio companions for Figure 1
 
-- `outputs/tableau/fig1_skill_prepost_dumbbell.png` — Tableau-style dumbbell (Pre → Post).
 - `outputs/tableau/fig1_skill_prepost_tableau.csv` — long data for Tableau Public.
 - `outputs/tableau/fig1_skill_prepost_wide_tableau.csv` — wide summary for Tableau.
-- `rstudio/fig1_skill_prepost.R` — ggplot2 script (run in RStudio).
+- `rstudio/fig1_skill_prepost.R` — ggplot2 grouped Pre/Post bars (run in RStudio).
 - `outputs/rstudio/fig1_skill_prepost_ggplot.png` — R ggplot2 grouped-bar output.
+
+Publication Figure 2 remains the two-panel **scatter** (`fig2_golem_speaking_paths.png`).
 
 ## Tables (not figured)
 
