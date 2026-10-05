@@ -511,58 +511,84 @@ def export_fig1_tableau_csv(s: pd.DataFrame, outdir: Path) -> Path:
     outdir.mkdir(parents=True, exist_ok=True)
     path = outdir / "fig1_skill_prepost_tableau.csv"
     long.to_csv(path, index=False)
-    # Also wide summary for dumbbell charts in Tableau
     wide_path = outdir / "fig1_skill_prepost_wide_tableau.csv"
     summary.to_csv(wide_path, index=False)
     return path
 
 
-def make_fig1_skill_decline(s: pd.DataFrame, outdir: Path) -> Path:
-    """Publication Figure 1: grouped Pre vs Post means (direction is unambiguous).
+def export_fig2_tableau_csv(s: pd.DataFrame, outdir: Path) -> Path:
+    """Point-level CSV for Tableau scatter of Speaking decline paths."""
+    outdir.mkdir(parents=True, exist_ok=True)
+    long = pd.DataFrame(
+        {
+            "Student_ID": list(s["Student_ID"]) * 2,
+            "Panel": (["A. Underrating gap"] * len(s)) + (["B. Translanguaging %"] * len(s)),
+            "Predictor": np.concatenate([s["Underrating_Gap"], s["TL_percent"]]),
+            "Speaking_decline": np.concatenate([s["Decline_Speaking"], s["Decline_Speaking"]]),
+            "N": len(s),
+            "Scale_note": "Speaking decline = Pre − Post on 0–100 scale",
+        }
+    )
+    path = outdir / "fig2_golem_paths_tableau.csv"
+    long.to_csv(path, index=False)
+    return path
 
-    Replaces the signed-difference bar chart, which readers often misread
-    (bars above zero looked like gains even when they encoded attrition).
-    """
+
+def _style_pub_axes(ax, *, grid_y: bool = True, grid_x: bool = False) -> None:
+    ax.set_facecolor("#FFFFFF")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_color("#C5CDD6")
+    ax.spines["bottom"].set_color("#C5CDD6")
+    ax.tick_params(colors="#4A5560", labelsize=9, length=3.5, width=0.8)
+    if grid_y:
+        ax.grid(True, axis="y", color="#EEF1F4", linewidth=0.9, zorder=0)
+    if grid_x:
+        ax.grid(True, axis="x", color="#EEF1F4", linewidth=0.9, zorder=0)
+    ax.set_axisbelow(True)
+
+
+def make_fig1_skill_decline(s: pd.DataFrame, outdir: Path) -> Path:
+    """Publication Figure 1: polished grouped Pre vs Post means."""
     df = _skill_prepost_summary(s)
     outdir.mkdir(parents=True, exist_ok=True)
 
-    # --- Primary publication figure: grouped Pre / Post bars ---
-    fig, ax = plt.subplots(figsize=(9.2, 5.8), facecolor="white")
-    ax.set_facecolor("white")
+    fig, ax = plt.subplots(figsize=(9.6, 6.0), facecolor="#F7F9FB")
+    _style_pub_axes(ax)
     x = np.arange(len(df))
-    width = 0.36
-    pre_color, post_color = "#4E79A7", "#F28E2B"
+    width = 0.34
+    pre_color, post_color = "#3D6F9C", "#E08A2E"
 
-    pre_bars = ax.bar(
+    ax.bar(
         x - width / 2,
         df["Pre_Mean"],
         width,
         color=pre_color,
-        edgecolor="#222222",
-        linewidth=0.6,
+        edgecolor="white",
+        linewidth=1.0,
         label="Pre (PYP exit)",
         zorder=3,
+        alpha=0.95,
     )
-    post_bars = ax.bar(
+    ax.bar(
         x + width / 2,
         df["Post_Mean"],
         width,
         color=post_color,
-        edgecolor="#222222",
-        linewidth=0.6,
+        edgecolor="white",
+        linewidth=1.0,
         label="Post (graduation)",
         zorder=3,
+        alpha=0.95,
     )
-
-    # 95% CI of the mean
     ax.errorbar(
         x - width / 2,
         df["Pre_Mean"],
         yerr=[df["Pre_Mean"] - df["Pre_lo"], df["Pre_hi"] - df["Pre_Mean"]],
         fmt="none",
-        ecolor="#222222",
-        elinewidth=1.1,
-        capsize=3,
+        ecolor="#2C3640",
+        elinewidth=1.0,
+        capsize=3.5,
         zorder=4,
     )
     ax.errorbar(
@@ -570,109 +596,315 @@ def make_fig1_skill_decline(s: pd.DataFrame, outdir: Path) -> Path:
         df["Post_Mean"],
         yerr=[df["Post_Mean"] - df["Post_lo"], df["Post_hi"] - df["Post_Mean"]],
         fmt="none",
-        ecolor="#222222",
-        elinewidth=1.1,
-        capsize=3,
+        ecolor="#2C3640",
+        elinewidth=1.0,
+        capsize=3.5,
         zorder=4,
     )
 
-    # Direction annotations above each skill pair
+    # Soft family underlays (oral–aural vs written)
+    for i, (_, row) in enumerate(df.iterrows()):
+        if row["Family"] == "Oral–aural":
+            ax.axvspan(i - 0.48, i + 0.48, color="#F8E8E8", alpha=0.55, zorder=0)
+        elif row["Family"] == "Written":
+            ax.axvspan(i - 0.48, i + 0.48, color="#E8F3F1", alpha=0.55, zorder=0)
+
     for i, (_, row) in enumerate(df.iterrows()):
         delta = row["Mean_decline"]
         if delta > 0.05:
-            label = f"↓ {delta:.1f}  {row['Sig']}"
+            label = f"↓ {delta:.1f}   {row['Sig']}"
             color = "#C0392B"
+            face = "#FDEDEC"
         elif delta < -0.05:
-            label = f"↑ {abs(delta):.1f}  {row['Sig']}"
+            label = f"↑ {abs(delta):.1f}   {row['Sig']}"
             color = "#1E8449"
+            face = "#E8F8F0"
         else:
-            label = f"≈ 0  {row['Sig']}"
+            label = f"≈ 0   {row['Sig']}"
             color = "#555555"
+            face = "#F2F3F4"
+        y = max(row["Pre_hi"], row["Post_hi"]) + 0.85
         ax.text(
             i,
-            max(row["Pre_hi"], row["Post_hi"]) + 0.55,
+            y,
             label,
             ha="center",
             va="bottom",
             fontsize=8,
             color=color,
             fontweight="bold",
+            bbox={
+                "boxstyle": "round,pad=0.28",
+                "facecolor": face,
+                "edgecolor": "none",
+                "alpha": 0.95,
+            },
+            zorder=5,
         )
 
-    ax.axhline(60, color="#888888", ls="--", lw=1.1, label="PYP pass threshold = 60", zorder=2)
-    ax.set_xticks(x)
-    ax.set_xticklabels(list(df["Skill"]))
-    ax.set_ylabel("Mean score on the 0–100 institutional scale")
-    ax.set_ylim(55, max(df["Pre_hi"].max(), df["Post_hi"].max()) + 4.5)
-    ax.set_title(
-        "Figure 1. Mean Pre and Post scores by skill (N = 120)",
-        loc="left",
-        fontsize=12,
-        fontweight="bold",
-    )
+    ax.axhline(60, color="#8A949E", ls=(0, (4, 3)), lw=1.15, zorder=2)
     ax.text(
-        0.0,
-        1.02,
-        "Grouped bars show Pre (PYP exit) vs Post (graduation). "
-        "Listening and Speaking fall; Reading and Writing do not decline significantly. "
-        "Error bars = 95% CI of the mean.",
-        transform=ax.transAxes,
+        len(df) - 0.55,
+        60.35,
+        "threshold 60",
+        ha="right",
+        va="bottom",
+        fontsize=7.5,
+        color="#6A737C",
+        style="italic",
+    )
+    ax.set_xticks(x)
+    ax.set_xticklabels(list(df["Skill"]), fontsize=10, color="#1B1F24")
+    ax.set_ylabel("Mean score (0–100 institutional scale)", fontsize=10, color="#4A5560")
+    ax.set_ylim(55, max(df["Pre_hi"].max(), df["Post_hi"].max()) + 5.2)
+    ax.set_xlim(-0.6, len(df) - 0.4)
+    fig.suptitle(
+        "Figure 1. Mean Pre and Post scores by skill (N = 120)",
+        x=0.02,
+        ha="left",
+        fontsize=13,
+        fontweight="bold",
+        color="#1B1F24",
+        y=0.98,
+    )
+    ax.set_title(
+        "Oral–aural skills decline; written skills do not  ·  error bars = 95% CI of the mean",
+        loc="left",
+        fontsize=9,
+        color="#5C6670",
+        pad=10,
+    )
+    leg = ax.legend(
+        frameon=True,
+        fancybox=False,
+        edgecolor="#D5DBE1",
         fontsize=8.5,
-        color="#555555",
+        loc="lower right",
+        framealpha=0.96,
+    )
+    leg.get_frame().set_linewidth(0.8)
+    # Small family key
+    ax.text(
+        0.01,
+        0.02,
+        "Shaded panels:  rose = oral–aural   ·   teal = written",
+        transform=ax.transAxes,
+        fontsize=7.5,
+        color="#7A848E",
         va="bottom",
     )
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    for spine in ("left", "bottom"):
-        ax.spines[spine].set_color("#222222")
-    ax.grid(True, axis="y", color="#D9D9D9", linewidth=0.7, zorder=0)
-    ax.set_axisbelow(True)
-    ax.legend(frameon=True, fancybox=False, edgecolor="#222222", fontsize=8, loc="lower right")
-    _ = (pre_bars, post_bars)
 
     path = outdir / "fig1_skill_mean_decline.png"
-    fig.tight_layout()
-    fig.savefig(path, dpi=160)
+    fig.tight_layout(rect=(0, 0, 1, 0.95))
+    fig.savefig(path, dpi=180, facecolor=fig.get_facecolor())
     plt.close(fig)
 
-    # Tableau-ready CSV only (no dumbbell — manuscript Fig 2 remains the scatter).
     tab_dir = outdir.parent / "tableau"
     tab_dir.mkdir(parents=True, exist_ok=True)
     export_fig1_tableau_csv(s, tab_dir)
+    make_fig1_tableau_style(s, tab_dir)
+    return path
 
+
+def make_fig1_tableau_style(s: pd.DataFrame, outdir: Path) -> Path:
+    """Tableau Public–inspired companion for Figure 1 (same design, dashboard card look)."""
+    df = _skill_prepost_summary(s)
+    outdir.mkdir(parents=True, exist_ok=True)
+    fig = plt.figure(figsize=(11.2, 6.4), facecolor=T["bg"])
+    gs = GridSpec(1, 1, figure=fig, left=0.08, right=0.97, top=0.82, bottom=0.12)
+    ax = fig.add_subplot(gs[0, 0])
+    card(ax, "")
+    x = np.arange(len(df))
+    w = 0.36
+    ax.bar(x - w / 2, df["Pre_Mean"], w, color=T["blue"], edgecolor="white", label="Pre (PYP exit)", zorder=3)
+    ax.bar(x + w / 2, df["Post_Mean"], w, color=T["orange"], edgecolor="white", label="Post (graduation)", zorder=3)
+    ax.errorbar(
+        x - w / 2,
+        df["Pre_Mean"],
+        yerr=[df["Pre_Mean"] - df["Pre_lo"], df["Pre_hi"] - df["Pre_Mean"]],
+        fmt="none",
+        ecolor=T["ink"],
+        elinewidth=1.0,
+        capsize=3,
+        zorder=4,
+    )
+    ax.errorbar(
+        x + w / 2,
+        df["Post_Mean"],
+        yerr=[df["Post_Mean"] - df["Post_lo"], df["Post_hi"] - df["Post_Mean"]],
+        fmt="none",
+        ecolor=T["ink"],
+        elinewidth=1.0,
+        capsize=3,
+        zorder=4,
+    )
+    for i, (_, row) in enumerate(df.iterrows()):
+        delta = row["Mean_decline"]
+        col = T["red"] if delta > 0.05 else T["green"]
+        arrow = "▼" if delta > 0.05 else "▲"
+        ax.text(
+            i,
+            max(row["Pre_hi"], row["Post_hi"]) + 0.7,
+            f"{arrow} {abs(delta):.1f}  {row['Sig']}",
+            ha="center",
+            fontsize=8.5,
+            color=col,
+            fontweight="bold",
+        )
+    ax.axhline(60, color=T["red"], ls="--", lw=1.2, alpha=0.7)
+    ax.set_xticks(x, list(df["Skill"]))
+    ax.set_ylabel("Mean score (0–100)")
+    ax.set_ylim(55, max(df["Pre_hi"].max(), df["Post_hi"].max()) + 4.8)
+    ax.legend(frameon=False, fontsize=9, loc="lower right")
+    fig.suptitle(
+        "Figure 1  ·  Tableau-style  ·  Pre vs Post skill means",
+        x=0.02,
+        ha="left",
+        fontsize=15,
+        fontweight="bold",
+        color=T["header"],
+        y=0.96,
+    )
+    fig.text(
+        0.02,
+        0.905,
+        "Dashboard card view of the publication chart  ·  SYNTHETIC N = 120  ·  threshold = 60",
+        fontsize=9.5,
+        color=T["muted"],
+    )
+    path = outdir / "fig1_skill_prepost_tableau_style.png"
+    fig.savefig(path, dpi=170)
+    plt.close(fig)
     return path
 
 
 def make_fig2_golem_paths(s: pd.DataFrame, outdir: Path) -> Path:
-    """Publication Figure 2: Speaking decline × underrating and translanguaging."""
-    path_u = "A. Underrating gap\n(actual PYP score − lecturer estimate)"
-    path_t = "B. Translanguaging exposure\n(% of class time in Turkish)"
-    long = pd.DataFrame(
-        {
-            "x": np.concatenate([s["Underrating_Gap"], s["TL_percent"]]),
-            "Decline": np.concatenate([s["Decline_Speaking"], s["Decline_Speaking"]]),
-            "Path": ([path_u] * len(s)) + ([path_t] * len(s)),
-        }
-    )
-    long["Path"] = pd.Categorical(long["Path"], categories=[path_u, path_t], ordered=True)
-    p = (
-        ggplot(long, aes("x", "Decline"))
-        + geom_point(alpha=0.55, size=1.8, color="#4E79A7")
-        + geom_smooth(method="lm", color="#C0392B", fill="#F5B7B1", alpha=0.35, size=1.0)
-        + geom_hline(yintercept=0, linetype="dotted", color="#666666")
-        + facet_wrap("~Path", scales="free_x", nrow=1)
-        + labs(
-            title="Figure 2. Speaking decline associated with underrating and translanguaging",
-            subtitle="Speaking change in points on the 0–100 scale (pre − post). PYP pass threshold = 60. SYNTHETIC N = 120.",
-            x="Predictor",
-            y="Speaking decline (points on 0–100 scale)",
-        )
-        + theme_rstudio()
-        + theme(figure_size=(10.5, 5.2))
-    )
+    """Publication Figure 2: polished two-panel scatter (Speaking decline paths)."""
     outdir.mkdir(parents=True, exist_ok=True)
-    return save_ggplot(p, outdir / "fig2_golem_speaking_paths.png")
+    panels = [
+        (
+            "A. Underrating gap",
+            "Actual PYP overall − lecturer estimate",
+            s["Underrating_Gap"],
+            "Underrating gap (points)",
+        ),
+        (
+            "B. Translanguaging exposure",
+            "% of content-course time in Turkish",
+            s["TL_percent"],
+            "Translanguaging (% Turkish)",
+        ),
+    ]
+    fig, axes = plt.subplots(1, 2, figsize=(11.0, 5.4), facecolor="#F7F9FB", sharey=True)
+    y = s["Decline_Speaking"].to_numpy()
+    for ax, (title, subtitle, xser, xlabel) in zip(axes, panels):
+        _style_pub_axes(ax, grid_y=True, grid_x=True)
+        x = xser.to_numpy()
+        ax.scatter(
+            x,
+            y,
+            s=36,
+            c="#3D6F9C",
+            alpha=0.55,
+            edgecolors="white",
+            linewidths=0.55,
+            zorder=3,
+        )
+        slope, intercept, r, p, _se = stats.linregress(x, y)
+        xs = np.linspace(x.min(), x.max(), 120)
+        ys = intercept + slope * xs
+        # simple analytic CI band for mean line
+        yhat = intercept + slope * x
+        resid = y - yhat
+        dof = max(len(x) - 2, 1)
+        s_err = np.sqrt(np.sum(resid**2) / dof)
+        x_mean = x.mean()
+        ssx = np.sum((x - x_mean) ** 2)
+        se_fit = s_err * np.sqrt(1 / len(x) + (xs - x_mean) ** 2 / ssx)
+        tcrit = stats.t.ppf(0.975, dof)
+        ax.fill_between(xs, ys - tcrit * se_fit, ys + tcrit * se_fit, color="#E8B4B0", alpha=0.45, zorder=1)
+        ax.plot(xs, ys, color="#C0392B", lw=2.0, zorder=4)
+        ax.axhline(0, color="#8A949E", ls=(0, (2, 2)), lw=1.0, zorder=2)
+        plabel = "p < .001" if p < 0.001 else f"p = {p:.3f}"
+        ax.text(
+            0.04,
+            0.96,
+            f"r = {r:.2f},  {plabel}",
+            transform=ax.transAxes,
+            va="top",
+            fontsize=9,
+            color="#1B1F24",
+            fontweight="bold",
+            bbox={"boxstyle": "round,pad=0.3", "facecolor": "white", "edgecolor": "#D5DBE1", "alpha": 0.95},
+        )
+        ax.set_title(title, loc="left", fontsize=11, fontweight="bold", color="#1B1F24", pad=8)
+        ax.text(0.0, 1.01, subtitle, transform=ax.transAxes, fontsize=8.5, color="#5C6670", va="bottom")
+        ax.set_xlabel(xlabel, fontsize=9.5, color="#4A5560")
+    axes[0].set_ylabel("Speaking decline (pre − post; points on 0–100)", fontsize=9.5, color="#4A5560")
+    fig.suptitle(
+        "Figure 2. Speaking decline associated with underrating and translanguaging",
+        x=0.02,
+        ha="left",
+        fontsize=13,
+        fontweight="bold",
+        color="#1B1F24",
+        y=0.99,
+    )
+    fig.text(
+        0.02,
+        0.935,
+        "Positive values = attrition  ·  bands = 95% CI of the fitted line  ·  SYNTHETIC N = 120",
+        fontsize=9,
+        color="#5C6670",
+    )
+    path = outdir / "fig2_golem_speaking_paths.png"
+    fig.tight_layout(rect=(0, 0, 1, 0.91))
+    fig.savefig(path, dpi=180, facecolor=fig.get_facecolor())
+    plt.close(fig)
 
+    tab_dir = outdir.parent / "tableau"
+    export_fig2_tableau_csv(s, tab_dir)
+    make_fig2_tableau_style(s, tab_dir)
+    return path
+
+
+def make_fig2_tableau_style(s: pd.DataFrame, outdir: Path) -> Path:
+    """Tableau-inspired companion scatter for Figure 2."""
+    outdir.mkdir(parents=True, exist_ok=True)
+    fig = plt.figure(figsize=(12.0, 5.8), facecolor=T["bg"])
+    fig.suptitle(
+        "Figure 2  ·  Tableau-style  ·  Speaking attrition paths",
+        x=0.02,
+        ha="left",
+        fontsize=15,
+        fontweight="bold",
+        color=T["header"],
+        y=0.97,
+    )
+    fig.text(0.02, 0.915, "Point + trend view of the Golem mechanism predictors  ·  SYNTHETIC N = 120", fontsize=9.5, color=T["muted"])
+    gs = GridSpec(1, 2, figure=fig, wspace=0.22, left=0.07, right=0.98, top=0.86, bottom=0.12)
+    specs = [
+        (s["Underrating_Gap"], "Underrating gap", T["blue"]),
+        (s["TL_percent"], "% class time in Turkish", T["orange"]),
+    ]
+    y = s["Decline_Speaking"]
+    for i, (x, xlab, col) in enumerate(specs):
+        ax = fig.add_subplot(gs[0, i])
+        card(ax, ["A. Underrating → Speaking decline", "B. Translanguaging → Speaking decline"][i])
+        ax.scatter(x, y, s=32, c=col, alpha=0.7, edgecolors="white", linewidths=0.4, zorder=3)
+        slope, intercept, r, p, _ = stats.linregress(x, y)
+        xs = np.linspace(x.min(), x.max(), 80)
+        ax.plot(xs, intercept + slope * xs, color=T["red"], lw=2.2, zorder=4)
+        ax.axhline(0, color=T["ink"], lw=0.7, alpha=0.5)
+        plabel = "p < .001" if p < 0.001 else f"p = {p:.3f}"
+        ax.text(0.04, 0.95, f"r = {r:.2f}, {plabel}", transform=ax.transAxes, va="top", fontsize=9, fontweight="bold", color=T["header"])
+        ax.set_xlabel(xlab)
+        if i == 0:
+            ax.set_ylabel("Speaking decline (pre − post)")
+    path = outdir / "fig2_golem_paths_tableau_style.png"
+    fig.savefig(path, dpi=170)
+    plt.close(fig)
+    return path
 
 def make_rstudio_decline_bars(s: pd.DataFrame) -> Path:
     """Archive alias — kept for optional --archive builds."""
@@ -882,14 +1114,21 @@ def main() -> None:
         "2. `fig2_golem_speaking_paths.png` — Speaking decline associated with underrating gap "
         "and translanguaging exposure.",
         "",
-        "## Tableau / RStudio companions for Figure 1",
+        "## Styled companions (Tableau + RStudio)",
         "",
-        "- `outputs/tableau/fig1_skill_prepost_tableau.csv` — long data for Tableau Public.",
-        "- `outputs/tableau/fig1_skill_prepost_wide_tableau.csv` — wide summary for Tableau.",
-        "- `rstudio/fig1_skill_prepost.R` — ggplot2 grouped Pre/Post bars (run in RStudio).",
-        "- `outputs/rstudio/fig1_skill_prepost_ggplot.png` — R ggplot2 grouped-bar output.",
+        "### Tableau-style PNGs + CSVs (`outputs/tableau/`)",
         "",
-        "Publication Figure 2 remains the two-panel **scatter** (`fig2_golem_speaking_paths.png`).",
+        "- `fig1_skill_prepost_tableau_style.png`",
+        "- `fig2_golem_paths_tableau_style.png`",
+        "- `fig1_skill_prepost_tableau.csv` / `fig1_skill_prepost_wide_tableau.csv`",
+        "- `fig2_golem_paths_tableau.csv`",
+        "",
+        "### RStudio / ggplot2 (`rstudio/fig1_and_fig2_styled.R`)",
+        "",
+        "- `outputs/rstudio/fig1_skill_prepost_ggplot.png`",
+        "- `outputs/rstudio/fig2_golem_paths_ggplot.png`",
+        "",
+        "Publication Figure 2 remains the two-panel **scatter**.",
         "",
         "## Tables (not figured)",
         "",
@@ -903,11 +1142,11 @@ def main() -> None:
         "python make_styled_figures.py --archive",
         "```",
         "",
-        "Rebuild publication figures:",
+        "Rebuild publication + styled companions:",
         "",
         "```bash",
         "python make_styled_figures.py",
-        "Rscript rstudio/fig1_skill_prepost.R",
+        "Rscript rstudio/fig1_and_fig2_styled.R",
         "```",
         "",
     ]
