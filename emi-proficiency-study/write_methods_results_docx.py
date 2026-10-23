@@ -156,6 +156,21 @@ def fmt_p(p: float) -> str:
     return f"= {p:.2f}".replace("0.", ".")
 
 
+def fmt_stat(x: float, digits: int) -> str:
+    """APA-style decimal with the leading zero omitted (W, p)."""
+    return f"{x:.{digits}f}".replace("0.", ".")
+
+
+def n_below(s: pd.DataFrame, skill: str, when: str) -> int:
+    return int((s[f"{when}_{skill}"] < 60).sum())
+
+
+def shapiro_w(s: pd.DataFrame, skill: str) -> tuple[float, float]:
+    d = s[f"Pre_{skill}"] - s[f"Post_{skill}"]
+    w = stats.shapiro(d)
+    return float(w.statistic), float(w.pvalue)
+
+
 def build_md(s: pd.DataFrame, pst: pd.DataFrame) -> str:
     lines = []
     lines.append("# English-Medium Instruction and Oral–Aural Attrition:")
@@ -181,14 +196,14 @@ def build_md(s: pd.DataFrame, pst: pd.DataFrame) -> str:
     )
     lines.append("")
     lines.append(
-        "**RQ2 (Qualitative — lecturers).** How do content lecturers describe whether and why they use "
-        "translanguaging in EMI courses?"
+        "**RQ2 (Qualitative — students).** To what do students attribute their oral–aural attrition? "
+        "Semi-structured follow-up, not a separate question: *Why do you think lecturers use Turkish "
+        "so often?* Prepared in advance from the researcher’s observation of these classrooms over "
+        "several years, and asked after the open answer."
     )
     lines.append("")
     lines.append(
-        "**RQ3 (Qualitative — students).** How do students experience EMI classroom language practices, "
-        "and how do they relate those practices to changes in their English proficiency—especially "
-        "Listening and Speaking?"
+        "**RQ3 (Qualitative — lecturers).** When lecturers use L1, what do they say underlies that use?"
     )
     lines.append("")
     lines.append("## Methodology")
@@ -251,10 +266,30 @@ def build_md(s: pd.DataFrame, pst: pd.DataFrame) -> str:
     lines.append("### Qualitative strand (RQ2–RQ3; next)")
     lines.append("")
     lines.append(
-        "Lecturer accounts: whether/why they translanguage (often framed as compensating for students’ "
-        "limited English to protect content learning). Student accounts: materials/lecturer English beyond "
-        "comprehension and/or lecturers’ EMI proficiency limits; reduced English verbal interaction; felt "
-        "worsening of Listening/Speaking. Analysis plan: thematic analysis after quantitative results are locked."
+        "Phase 2 uses semi-structured interviews. Student interviews open with RQ2: to what they attribute "
+        "their oral–aural attrition. Other accounts, including reliance on written technical discourse, "
+        "can surface there without a prompt. A prepared follow-up is then asked of each student: *Why do "
+        "you think lecturers use Turkish so often?* This is not a second research question. It was written "
+        "in advance because the researcher had observed frequent lecturer use of Turkish in these EMI "
+        "classrooms over several years and expected that practice to be offered as an account of attrition. "
+        "If the student has already mentioned Turkish, the follow-up probes that remark. If not, it is still "
+        "asked and reported as a planned question."
+    )
+    lines.append("")
+    lines.append(
+        "The follow-up was prepared for two anticipated accounts, not a longer list. The first is lecturers’ "
+        "limited English for sustained EMI teaching. The second is lecturers’ underrating of students’ "
+        "English. Protecting content because Turkish is the shared first language is treated as part of "
+        "that second account, not as a third theme. Lecturer interviews (RQ3) ask what underlies their own "
+        "use of L1. From the same extended observation, lecturers are expected to cite only students’ low "
+        "proficiency, not their own English. That answer is interpreted as a Golem effect. They are not "
+        "expected to reflect on their own spoken English. When their proficiency is raised, the expected "
+        "account is that they have already validated it by a proficiency test required for English-medium "
+        "teaching. In this setting that credential is typically a national multiple-choice examination "
+        "such as YDS or YÖKDİL: reading-based items on grammar, vocabulary, and the meaning of texts, "
+        "with no Listening or Speaking component (ÖSYM). The test therefore does not evidence the "
+        "oral–aural proficiency EMI teaching requires. Thematic analysis follows once these quantitative "
+        "results are locked."
     )
     lines.append("")
     lines.append("## Quantitative results (RQ1)")
@@ -266,14 +301,40 @@ def build_md(s: pd.DataFrame, pst: pd.DataFrame) -> str:
     speak = pst.loc[pst["Skill"] == "Speaking"].iloc[0]
     read = pst.loc[pst["Skill"] == "Reading"].iloc[0]
     write = pst.loc[pst["Skill"] == "Writing"].iloc[0]
+    sp_pre, sp_post = n_below(s, "Speaking", "Pre"), n_below(s, "Speaking", "Post")
+    li_pre, li_post = n_below(s, "Listening", "Pre"), n_below(s, "Listening", "Post")
+    re_pre, re_post = n_below(s, "Reading", "Pre"), n_below(s, "Reading", "Post")
+    wr_pre, wr_post = n_below(s, "Writing", "Pre"), n_below(s, "Writing", "Post")
+    sw = {sk: shapiro_w(s, sk) for sk in ["Listening", "Reading", "Writing", "Speaking", "Overall"]}
+
+    def pct(k: int) -> str:
+        return f"{100 * k / n:.1f}%"
+
     lines.append("### Preliminary descriptives")
     lines.append("")
     lines.append(
-        f"All {n} completers met the institutional pretest threshold (Pre_Overall minimum = {pre_min:.1f}). "
-        f"Mean Overall declined from Pre (*M* = {overall['Pre_M']:.2f}, *SD* = {overall['Pre_SD']:.2f}) to "
-        f"Post (*M* = {overall['Post_M']:.2f}, *SD* = {overall['Post_SD']:.2f}). At graduation, "
-        f"{below} students ({100 * below / n:.1f}%) scored below 60 overall. Table 1 summarises Pre and Post "
-        "*M* and *SD* for each skill (Nicol & Pexman, 2010a, means Play-It-Safe format)."
+        f"All {n} completers met the institutional *overall* threshold at pretest "
+        f"(Pre_Overall minimum = {pre_min:.1f}). Skill scores were not uniformly above 60. "
+        "Table 1 reports Pre and Post means and standard deviations (Nicol & Pexman, 2010a, means "
+        "Play-It-Safe format). At PYP exit, skill means sat in a narrow band above the pass mark, "
+        f"from Speaking (*M* = {speak['Pre_M']:.2f}, *SD* = {speak['Pre_SD']:.2f}) to Reading "
+        f"(*M* = {read['Pre_M']:.2f}, *SD* = {read['Pre_SD']:.2f}). By graduation that band had split. "
+        f"Speaking fell to *M* = {speak['Post_M']:.2f} (*SD* = {speak['Post_SD']:.2f}), just above the "
+        f"threshold, and Listening to *M* = {listen['Post_M']:.2f} (*SD* = {listen['Post_SD']:.2f}). "
+        f"Reading (*M* = {read['Post_M']:.2f}, *SD* = {read['Post_SD']:.2f}) and Writing "
+        f"(*M* = {write['Post_M']:.2f}, *SD* = {write['Post_SD']:.2f}) were essentially unchanged. "
+        "Post standard deviations were slightly larger than Pre standard deviations for every skill, "
+        "a modest widening of the score spread. Overall declined from "
+        f"*M* = {overall['Pre_M']:.2f} (*SD* = {overall['Pre_SD']:.2f}) to "
+        f"*M* = {overall['Post_M']:.2f} (*SD* = {overall['Post_SD']:.2f})."
+    )
+    lines.append("")
+    lines.append(
+        "The pass mark makes the practical size of that change clearer than the two-point overall mean. "
+        f"No student scored below 60 overall at pretest; {below} students ({pct(below)}) did so at "
+        f"graduation. Below-threshold counts rose most for Speaking ({sp_pre}/{n}, {pct(sp_pre)}, to "
+        f"{sp_post}/{n}, {pct(sp_post)}) and Listening ({li_pre}/{n}, {pct(li_pre)}, to {li_post}/{n}, "
+        f"{pct(li_post)}). Reading ({re_pre} to {re_post}) and Writing ({wr_pre} to {wr_post}) changed little."
     )
     lines.append("")
     lines.append("### Table 1")
@@ -291,22 +352,47 @@ def build_md(s: pd.DataFrame, pst: pd.DataFrame) -> str:
         "Note. Scores on the 0–100 institutional scale. PYP pass threshold = 60 (≈ CEFR B1)."
     )
     lines.append("")
+    lines.append("### Difference-score checks")
+    lines.append("")
+    lines.append(
+        "Shapiro–Wilk tests on the Pre−Post difference scores did not indicate departure from normality: "
+        f"Listening *W* = {fmt_stat(sw['Listening'][0], 3)}, *p* = {fmt_stat(sw['Listening'][1], 2)}; "
+        f"Reading *W* = {fmt_stat(sw['Reading'][0], 3)}, *p* = {fmt_stat(sw['Reading'][1], 2)}; "
+        f"Writing *W* = {fmt_stat(sw['Writing'][0], 3)}, *p* = {fmt_stat(sw['Writing'][1], 2)}; "
+        f"Speaking *W* = {fmt_stat(sw['Speaking'][0], 3)}, *p* = {fmt_stat(sw['Speaking'][1], 2)}; "
+        f"Overall *W* = {fmt_stat(sw['Overall'][0], 3)}, *p* = {fmt_stat(sw['Overall'][1], 2)}. "
+        "Paired-samples *t* tests were therefore appropriate. Wilcoxon signed-rank companions agreed "
+        "with every significance decision in Table 2."
+    )
+    lines.append("")
     lines.append("### Paired comparisons")
     lines.append("")
     lines.append(
-        "Table 2 reports paired-samples *t* tests for Pre−Post change (positive *M*diff = attrition). "
-        "Speaking showed the largest significant decline "
-        f"(*M*diff = {speak['Mdiff']:.2f}, *t*(119) = {speak['t']:.2f}, *p* {fmt_p(speak['p'])}, "
-        f"*d_z* = {speak['dz']:.2f}, 95% CI [{speak['lo']:.2f}, {speak['hi']:.2f}]). "
-        "Listening also declined significantly, but less sharply "
-        f"(*M*diff = {listen['Mdiff']:.2f}, *t*(119) = {listen['t']:.2f}, *p* {fmt_p(listen['p'])}, "
-        f"*d_z* = {listen['dz']:.2f}, 95% CI [{listen['lo']:.2f}, {listen['hi']:.2f}]). "
+        "Table 2 reports paired-samples *t* tests for Pre−Post change (positive *M*diff = attrition), "
+        "in Nicol and Pexman’s (2010a) Play-It-Safe multi-*t* layout. Effect sizes are Cohen’s *d_z* "
+        "(about .20 small, .50 medium, .80 large). Speaking showed a large decline "
+        f"(*M*diff = {speak['Mdiff']:.2f}, *SD*diff = {speak['SD_diff']:.2f}, "
+        f"*t*(119) = {speak['t']:.2f}, *p* {fmt_p(speak['p'])}, *d_z* = {speak['dz']:.2f}, "
+        f"95% CI [{speak['lo']:.2f}, {speak['hi']:.2f}]). The interval excludes zero: a loss of roughly "
+        "four to six points is plausible for the population mean. Listening also declined, with a large "
+        f"effect (*M*diff = {listen['Mdiff']:.2f}, *SD*diff = {listen['SD_diff']:.2f}, "
+        f"*t*(119) = {listen['t']:.2f}, *p* {fmt_p(listen['p'])}, *d_z* = {listen['dz']:.2f}, "
+        f"95% CI [{listen['lo']:.2f}, {listen['hi']:.2f}]). The Speaking interval lies almost entirely "
+        "above the Listening interval, so the point estimates order Speaking above Listening. A formal "
+        "test of that difference was not run; repeated-measures ANOVA was not the lead analysis."
+    )
+    lines.append("")
+    lines.append(
         f"Reading (*M*diff = {read['Mdiff']:.2f}, *t*(119) = {read['t']:.2f}, *p* {fmt_p(read['p'])}, "
-        f"*d_z* = {read['dz']:.2f}) and Writing (*M*diff = {write['Mdiff']:.2f}, *t*(119) = {write['t']:.2f}, "
-        f"*p* {fmt_p(write['p'])}, *d_z* = {write['dz']:.2f}) did **not** decline; both showed small "
-        "non-significant gains. Overall declined significantly "
+        f"*d_z* = {read['dz']:.2f}, 95% CI [{read['lo']:.2f}, {read['hi']:.2f}]) and Writing "
+        f"(*M*diff = {write['Mdiff']:.2f}, *t*(119) = {write['t']:.2f}, *p* {fmt_p(write['p'])}, "
+        f"*d_z* = {write['dz']:.2f}, 95% CI [{write['lo']:.2f}, {write['hi']:.2f}]) did not decline. "
+        "Both intervals include zero, and both effects are negligible. The negative differences are "
+        "small non-significant gains. Overall declined "
         f"(*M*diff = {overall['Mdiff']:.2f}, *t*(119) = {overall['t']:.2f}, *p* {fmt_p(overall['p'])}, "
-        f"*d_z* = {overall['dz']:.2f}), reflecting the oral–aural losses."
+        f"*d_z* = {overall['dz']:.2f}, 95% CI [{overall['lo']:.2f}, {overall['hi']:.2f}]), a medium-to-large "
+        "effect. Because Overall is the unweighted mean of the four skills, that drop is the net of the "
+        "oral–aural losses and the stable written scores, not a uniform decline across the profile."
     )
     lines.append("")
     lines.append("### Table 2")
@@ -331,12 +417,16 @@ def build_md(s: pd.DataFrame, pst: pd.DataFrame) -> str:
     lines.append("### Summary for the mixed-methods sequence")
     lines.append("")
     lines.append(
-        "Quantitatively, attrition is concentrated in the oral–aural skills, with **Speaking** showing the "
-        "greatest loss and **Listening** a substantial secondary loss; **Reading** and **Writing** remain "
-        "statistically stable (slight non-significant gains), consistent with greater dependence on written "
-        "EAP discourse during the degree. Figure 1 displays the Pre vs Post means. These skill-specific "
-        "results close the quantitative strand (RQ1) and motivate the forthcoming qualitative strand "
-        "(RQ2–RQ3) on translanguaging and related attributions—without further QUANT mechanism modelling."
+        "Figure 1 shows the same split: Pre means sit together, and Post means fall for Speaking and "
+        "Listening while Reading and Writing hold. Speaking’s post mean rests on the pass mark, and "
+        "nearly half the panel scored below 60 on Speaking at graduation. RQ1 is therefore answered at "
+        "the skill level. Attrition is oral–aural, largest for Speaking and substantial for Listening; "
+        "Reading and Writing do not decline. The pattern is compatible with heavier use of written EAP "
+        "discourse than of spoken English during the degree, but Phase 1 does not test that explanation. "
+        "Student interviews open with what oral–aural attrition is attributed to (RQ2), then a prepared "
+        "follow-up on why lecturers use Turkish so often. Lecturer interviews (RQ3) ask what underlies "
+        "their own L1 use. Lecturers are expected to cite only students’ low proficiency, and that answer "
+        "is tied to the Golem effect."
     )
     lines.append("")
     lines.append("## Figure")
@@ -345,7 +435,8 @@ def build_md(s: pd.DataFrame, pst: pd.DataFrame) -> str:
     lines.append("")
     lines.append(
         "**Figure 1.** Mean Pre (PYP exit) and Post (graduation) scores by skill with 95% CIs of the mean "
-        "(0–100 scale; threshold = 60). Only publication figure (Nicol & Pexman, 2010b)."
+        "(0–100 scale; threshold = 60). Labels above the bars are Post − Pre (negative = attrition). "
+        "Only publication figure (Nicol & Pexman, 2010b)."
     )
     lines.append("")
     lines.append("## References (selected)")
@@ -411,14 +502,15 @@ def build_docx(s: pd.DataFrame, pst: pd.DataFrame) -> Document:
     )
     add_para(
         doc,
-        "RQ2 (Qualitative — students; primary). To what do students attribute oral–aural attrition during "
-        "EMI, and what themes emerge (including frequent translanguaging)?",
+        "RQ2 (Qualitative — students). To what do students attribute their oral–aural attrition? "
+        "Semi-structured follow-up, not a separate question: Why do you think lecturers use Turkish "
+        "so often? Prepared in advance from the researcher’s observation over several years, and asked "
+        "after the open answer.",
         first_line=False,
     )
     add_para(
         doc,
-        "RQ3 (Qualitative — lecturers; optional/light). Do lecturers report translanguaging, for what "
-        "reasons, and how do they perceive students’ English?",
+        "RQ3 (Qualitative — lecturers). When lecturers use L1, what do they say underlies that use?",
         first_line=False,
     )
 
@@ -477,12 +569,29 @@ def build_docx(s: pd.DataFrame, pst: pd.DataFrame) -> Document:
     add_heading_styled(doc, "Qualitative strand (forthcoming)", level=2)
     add_para(
         doc,
-        "RQ2–RQ3 will draw on lecturer and student interviews. Anticipated lecturer themes include "
-        "translanguaging as compensation for perceived student English limitations to secure content "
-        "learning. Anticipated student themes include materials/lecturer English beyond their level "
-        "and/or lecturers’ limited EMI proficiency; reduced English verbal interaction; and a felt "
-        "decline in Listening and Speaking. Thematic analysis will proceed after these quantitative "
-        "results are fixed.",
+        "Phase 2 uses semi-structured interviews. Student interviews open with what oral–aural attrition "
+        "is attributed to (RQ2), so other accounts, including reliance on written technical discourse, can "
+        "surface without a prompt. Each student is then asked a prepared follow-up: why they think "
+        "lecturers use Turkish so often. That question is not a second research question. It was written "
+        "in advance because the researcher had observed frequent lecturer use of Turkish in these EMI "
+        "classrooms over several years and expected it to be offered as an account of attrition. If the "
+        "student has already mentioned Turkish, the follow-up probes that remark. If not, it is still asked "
+        "and reported as a planned question.",
+    )
+    add_para(
+        doc,
+        "The follow-up was prepared for two anticipated accounts. The first is lecturers’ limited English "
+        "for sustained EMI teaching. The second is lecturers’ underrating of students’ English. Protecting "
+        "subject content because Turkish is the shared first language is part of that second account, not "
+        "a third theme. Lecturer interviews (RQ3) ask what underlies their own use of L1. From the same "
+        "extended observation, lecturers are expected to cite only students’ low proficiency, not their "
+        "own English. That answer is interpreted as a Golem effect. They are not expected to reflect on "
+        "their own spoken English. When their proficiency is raised, the expected account is that they "
+        "have already validated it by a proficiency test required for English-medium teaching. In this "
+        "setting that credential is typically a national multiple-choice examination such as YDS or "
+        "YÖKDİL: reading-based items on grammar, vocabulary, and the meaning of texts, with no Listening "
+        "or Speaking component (ÖSYM). The test therefore does not evidence the oral–aural proficiency "
+        "EMI teaching requires. Thematic analysis will proceed after these quantitative results are fixed.",
     )
 
     add_heading_styled(doc, "Quantitative results (RQ1)", level=1)
@@ -494,15 +603,40 @@ def build_docx(s: pd.DataFrame, pst: pd.DataFrame) -> Document:
     read = pst.loc[pst["Skill"] == "Reading"].iloc[0]
     write = pst.loc[pst["Skill"] == "Writing"].iloc[0]
 
+    sp_pre, sp_post = n_below(s, "Speaking", "Pre"), n_below(s, "Speaking", "Post")
+    li_pre, li_post = n_below(s, "Listening", "Pre"), n_below(s, "Listening", "Post")
+    re_pre, re_post = n_below(s, "Reading", "Pre"), n_below(s, "Reading", "Post")
+    wr_pre, wr_post = n_below(s, "Writing", "Pre"), n_below(s, "Writing", "Post")
+    sw = {sk: shapiro_w(s, sk) for sk in ["Listening", "Reading", "Writing", "Speaking", "Overall"]}
+
+    def pct(k: int) -> str:
+        return f"{100 * k / n:.1f}%"
+
     add_heading_styled(doc, "Preliminary descriptives", level=2)
     add_para(
         doc,
-        f"All {n} completers scored at or above the institutional threshold at pretest "
-        f"(Pre_Overall minimum = {pre_min:.1f}). Mean Overall declined from Pre "
-        f"(M = {overall['Pre_M']:.2f}, SD = {overall['Pre_SD']:.2f}) to Post "
-        f"(M = {overall['Post_M']:.2f}, SD = {overall['Post_SD']:.2f}). At graduation, {below} students "
-        f"({100 * below / n:.1f}%) scored below 60 overall. Table 1 reports Pre and Post means and "
-        "standard deviations by skill in a Play-It-Safe means format (Nicol & Pexman, 2010a).",
+        f"All {n} completers met the institutional overall threshold at pretest "
+        f"(Pre_Overall minimum = {pre_min:.1f}). Skill scores were not uniformly above 60. "
+        "Table 1 reports Pre and Post means and standard deviations in a Play-It-Safe means format "
+        "(Nicol & Pexman, 2010a). At PYP exit, skill means sat in a narrow band above the pass mark, "
+        f"from Speaking (M = {speak['Pre_M']:.2f}, SD = {speak['Pre_SD']:.2f}) to Reading "
+        f"(M = {read['Pre_M']:.2f}, SD = {read['Pre_SD']:.2f}). By graduation that band had split. "
+        f"Speaking fell to M = {speak['Post_M']:.2f} (SD = {speak['Post_SD']:.2f}), just above the "
+        f"threshold, and Listening to M = {listen['Post_M']:.2f} (SD = {listen['Post_SD']:.2f}). "
+        f"Reading (M = {read['Post_M']:.2f}, SD = {read['Post_SD']:.2f}) and Writing "
+        f"(M = {write['Post_M']:.2f}, SD = {write['Post_SD']:.2f}) were essentially unchanged. "
+        "Post standard deviations were slightly larger than Pre standard deviations for every skill. "
+        f"Overall declined from M = {overall['Pre_M']:.2f} (SD = {overall['Pre_SD']:.2f}) to "
+        f"M = {overall['Post_M']:.2f} (SD = {overall['Post_SD']:.2f}).",
+    )
+    add_para(
+        doc,
+        "The pass mark makes the practical size of that change clearer than the two-point overall mean. "
+        f"No student scored below 60 overall at pretest; {below} students ({pct(below)}) did so at "
+        f"graduation. Below-threshold counts rose most for Speaking ({sp_pre} of {n}, {pct(sp_pre)}, to "
+        f"{sp_post} of {n}, {pct(sp_post)}) and Listening ({li_pre} of {n}, {pct(li_pre)}, to "
+        f"{li_post} of {n}, {pct(li_post)}). Reading ({re_pre} to {re_post}) and Writing "
+        f"({wr_pre} to {wr_post}) changed little.",
     )
 
     # Table 1
@@ -528,24 +662,47 @@ def build_docx(s: pd.DataFrame, pst: pd.DataFrame) -> Document:
             t1.rows[i].cells[j].text = v
     style_table_apa(t1)
 
+    add_heading_styled(doc, "Difference-score checks", level=2)
+    add_para(
+        doc,
+        "Shapiro–Wilk tests on the Pre−Post difference scores did not indicate departure from normality: "
+        f"Listening W = {fmt_stat(sw['Listening'][0], 3)}, p = {fmt_stat(sw['Listening'][1], 2)}; "
+        f"Reading W = {fmt_stat(sw['Reading'][0], 3)}, p = {fmt_stat(sw['Reading'][1], 2)}; "
+        f"Writing W = {fmt_stat(sw['Writing'][0], 3)}, p = {fmt_stat(sw['Writing'][1], 2)}; "
+        f"Speaking W = {fmt_stat(sw['Speaking'][0], 3)}, p = {fmt_stat(sw['Speaking'][1], 2)}; "
+        f"Overall W = {fmt_stat(sw['Overall'][0], 3)}, p = {fmt_stat(sw['Overall'][1], 2)}. "
+        "Paired-samples t tests were therefore appropriate. Wilcoxon signed-rank companions agreed "
+        "with every significance decision in Table 2.",
+    )
+
     add_heading_styled(doc, "Paired-samples comparisons", level=2)
     add_para(
         doc,
         "Table 2 presents paired-samples t tests for Pre–Post change (Mdiff = Pre − Post; positive values "
         "indicate attrition), following Nicol and Pexman’s (2010a) Play-It-Safe multi-t-test layout. "
-        f"Speaking showed the largest significant decline (Mdiff = {speak['Mdiff']:.2f}, "
+        "Effect sizes are Cohen’s d_z (about .20 small, .50 medium, and .80 large). Speaking showed a "
+        f"large decline (Mdiff = {speak['Mdiff']:.2f}, SDdiff = {speak['SD_diff']:.2f}, "
         f"t(119) = {speak['t']:.2f}, p {fmt_p(speak['p'])}, d_z = {speak['dz']:.2f}, "
-        f"95% CI [{speak['lo']:.2f}, {speak['hi']:.2f}]). Listening also declined significantly, "
-        f"though less sharply (Mdiff = {listen['Mdiff']:.2f}, t(119) = {listen['t']:.2f}, "
-        f"p {fmt_p(listen['p'])}, d_z = {listen['dz']:.2f}, "
-        f"95% CI [{listen['lo']:.2f}, {listen['hi']:.2f}]). "
+        f"95% CI [{speak['lo']:.2f}, {speak['hi']:.2f}]). The interval excludes zero: a loss of roughly "
+        "four to six points is plausible for the population mean. Listening also declined, with a large "
+        f"effect (Mdiff = {listen['Mdiff']:.2f}, SDdiff = {listen['SD_diff']:.2f}, "
+        f"t(119) = {listen['t']:.2f}, p {fmt_p(listen['p'])}, d_z = {listen['dz']:.2f}, "
+        f"95% CI [{listen['lo']:.2f}, {listen['hi']:.2f}]). The Speaking interval lies almost entirely "
+        "above the Listening interval, so the point estimates order Speaking above Listening. A formal "
+        "test of that difference was not run; repeated-measures ANOVA was not the lead analysis.",
+    )
+    add_para(
+        doc,
         f"Reading (Mdiff = {read['Mdiff']:.2f}, t(119) = {read['t']:.2f}, p {fmt_p(read['p'])}, "
-        f"d_z = {read['dz']:.2f}) and Writing (Mdiff = {write['Mdiff']:.2f}, t(119) = {write['t']:.2f}, "
-        f"p {fmt_p(write['p'])}, d_z = {write['dz']:.2f}) did not decline; both showed small "
-        "non-significant gains. Overall declined significantly "
+        f"d_z = {read['dz']:.2f}, 95% CI [{read['lo']:.2f}, {read['hi']:.2f}]) and Writing "
+        f"(Mdiff = {write['Mdiff']:.2f}, t(119) = {write['t']:.2f}, p {fmt_p(write['p'])}, "
+        f"d_z = {write['dz']:.2f}, 95% CI [{write['lo']:.2f}, {write['hi']:.2f}]) did not decline. "
+        "Both intervals include zero, and both effects are negligible. The negative differences are "
+        "small non-significant gains. Overall declined "
         f"(Mdiff = {overall['Mdiff']:.2f}, t(119) = {overall['t']:.2f}, p {fmt_p(overall['p'])}, "
-        f"d_z = {overall['dz']:.2f}), reflecting the oral–aural losses. Wilcoxon signed-rank tests "
-        "supported the same significance decisions.",
+        f"d_z = {overall['dz']:.2f}, 95% CI [{overall['lo']:.2f}, {overall['hi']:.2f}]), a medium-to-large "
+        "effect. Because Overall is the unweighted mean of the four skills, that drop is the net of the "
+        "oral–aural losses and the stable written scores, not a uniform decline across the profile.",
     )
 
     # Table 2
@@ -578,13 +735,16 @@ def build_docx(s: pd.DataFrame, pst: pd.DataFrame) -> Document:
     add_heading_styled(doc, "Summary for the mixed-methods sequence", level=2)
     add_para(
         doc,
-        "Taken together, quantitative attrition is concentrated in the oral–aural skills: Speaking shows "
-        "the greatest loss and Listening a substantial secondary loss, whereas Reading and Writing remain "
-        "statistically stable (slight non-significant gains), consistent with stronger reliance on written "
-        "EAP discourse during the degree. Figure 1 displays Pre versus Post means with 95% confidence "
-        "intervals and is the sole publication figure. These results answer RQ1 and motivate the "
-        "qualitative strand (RQ2–RQ3) on translanguaging and related attributions, without additional "
-        "quantitative mechanism models.",
+        "Figure 1 shows the same split: Pre means sit together, and Post means fall for Speaking and "
+        "Listening while Reading and Writing hold. Speaking’s post mean rests on the pass mark, and "
+        "nearly half the panel scored below 60 on Speaking at graduation. RQ1 is therefore answered at "
+        "the skill level. Attrition is oral–aural, largest for Speaking and substantial for Listening; "
+        "Reading and Writing do not decline. The pattern is compatible with heavier use of written EAP "
+        "discourse than of spoken English during the degree, but Phase 1 does not test that explanation. "
+        "Student interviews open with what oral–aural attrition is attributed to (RQ2), then a prepared "
+        "follow-up on why lecturers use Turkish so often. Lecturer interviews (RQ3) ask what underlies "
+        "their own L1 use. Lecturers are expected to cite only students’ low proficiency, and that answer "
+        "is tied to the Golem effect.",
     )
 
     fig1 = ROOT / "outputs" / "rstudio" / "fig1_skill_prepost_ggplot.png"
@@ -595,8 +755,9 @@ def build_docx(s: pd.DataFrame, pst: pd.DataFrame) -> Document:
             doc,
             "Figure 1",
             "Mean Pre (PYP exit) and Post (graduation) scores by skill with 95% confidence intervals "
-            "of the mean (0–100 scale). Speaking shows the largest decline, then Listening; Reading and "
-            "Writing do not decline. PYP pass threshold = 60.",
+            "of the mean (0–100 scale). Labels above the bars are Post minus Pre (negative = attrition). "
+            "Speaking shows the largest decline, then Listening; Reading and Writing do not decline. "
+            "PYP pass threshold = 60.",
             note="Grouped bar graph (Nicol & Pexman, 2010b). Error bars = 95% CIs of the mean. "
             "Only figure retained for publishing economy.",
         )
@@ -625,11 +786,16 @@ def main() -> None:
     OUT_MD.write_text(md, encoding="utf-8")
     doc = build_docx(s, pst)
     doc.save(OUT_DOCX)
-    DESKTOP.mkdir(parents=True, exist_ok=True)
-    doc.save(DESKTOP / OUT_DOCX.name)
-    (DESKTOP / OUT_MD.name).write_text(md, encoding="utf-8")
-    ART.mkdir(parents=True, exist_ok=True)
-    doc.save(ART / OUT_DOCX.name)
+    for dest_dir in (DESKTOP, ART):
+        try:
+            if not dest_dir.parent.exists():
+                print("skip copy", dest_dir)
+                continue
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            doc.save(dest_dir / OUT_DOCX.name)
+            (dest_dir / OUT_MD.name).write_text(md, encoding="utf-8")
+        except OSError as exc:
+            print("skip copy", dest_dir, exc)
     print("wrote", OUT_DOCX)
     print("wrote", OUT_MD)
 

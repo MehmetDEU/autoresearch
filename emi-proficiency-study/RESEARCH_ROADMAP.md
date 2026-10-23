@@ -7,7 +7,7 @@ Design: **explanatory sequential mixed methods** (QUANT → QUAL)
 
 ## Core claim (one paragraph)
 
-Engineering EMI students sit the same institutional English test at **PYP exit (pre)** and **graduation (post)**. **Listening and Speaking** decline; **Reading and Writing** do not, because coursework is more **EAP / written-discourse dependent** than spoken **ELFA**-style interaction. We then ask **what this oral–aural attrition is attributed to**, mainly through **students**, with optional light input from **lecturers**. Two candidate explanations dominate: (1) lecturers’ **limited English** for sustained EMI teaching, and (2) lecturers **underrate** students and lean on **translanguaging**, so English verbal interaction shrinks and oral–aural skills erode.
+Engineering EMI students sit the same institutional English test at **PYP exit (pre)** and **graduation (post)**. **Listening and Speaking** decline; **Reading and Writing** do not, because coursework is more **EAP / written-discourse dependent** than spoken **ELFA**-style interaction. We then ask **what this oral–aural attrition is attributed to**, mainly through **students**, with a short focused **lecturer** interview. Two explanations stay separate: (1) lecturers’ **limited English** for sustained EMI teaching, and (2) a **Golem effect** — lecturers presuppose that students are not proficient enough, so translanguaging and Turkish become the safe way to protect content when L1 is shared. Spoken English thins out, and oral–aural skills erode over four years.
 
 ---
 
@@ -17,23 +17,23 @@ Engineering EMI students sit the same institutional English test at **PYP exit (
 | --- | --- | --- |
 | 0.1 | Confirm design: QUANT first (pre/post), then QUAL (attribution) | Locked |
 | 0.2 | Confirm skill pattern: L+S decline; R+W stable / slight gain | Locked in synthetic panel |
-| 0.3 | Confirm explanatory focus: translanguaging + two arguments (lecturer English vs underrating) | Locked |
-| 0.4 | Decide lecturer role: **full interviews** vs **short probe only** (recommended default below) | Decide next |
+| 0.3 | Explanatory focus: translanguaging practice; motives = lecturer English **or** Golem underrating | Locked |
+| 0.4 | Lecturer role: **short focused interview** (Golem expectancy has to be heard from lecturers) | Locked |
 | 0.5 | Write / refresh lit review later (not blocking roadmap) | Pending |
 
-### Recommended lecturer option (lighter)
+### Lecturer interview (short, but required)
 
-You do **not** need long lecturer interviews unless you want depth.
+Student interviews stay primary for the experience of attrition. Lecturer interviews are short, not optional, because the Golem expectancy is a lecturer-held presupposition.
 
-**Default (recommended):** short lecturer probe (survey or brief interview), 3 questions only:
+About five or six questions:
 
-1. Do you use Turkish / translanguaging in EMI classes? How often?
-2. Why? (open + prompts: student comprehension / content security / own comfort in English / time / materials)
-3. How do you rate your students’ English for EMI? (and optionally: relative to the PYP exit standard)
+1. How often do you use Turkish in EMI classes?
+2. Why? (content security, student level, your own English, time, materials)
+3. How proficient do you judge your students’ English to be for EMI content?
+4. What would be lost if the class stayed in English?
+5. Does sharing Turkish as L1 change that judgment?
 
-**Heavier option (optional):** fuller lecturer interviews only if probes show rich disagreement or you need narrative for a journal that expects dual QUAL strands.
-
-**Student strand stays primary** for attribution themes.
+A longer lecturer study is unnecessary unless those answers diverge sharply.
 
 ---
 
@@ -59,25 +59,27 @@ You do **not** need long lecturer interviews unless you want depth.
 
 ## Phase 2 — Qualitative attribution (RQ2–RQ3)
 
-**Purpose:** Explain *why* Listening/Speaking declined.
+**Purpose:** Ask students what they attribute oral–aural attrition to. Then a prepared follow-up on frequent lecturer L1, expected from the researcher’s observation over years. Then ask lecturers what underlies their own L1 use. A Golem reading applies only if they cite students’ proficiency.
 
-### Research questions (refined)
+### Research questions
 
-**RQ2 (students — primary).** To what do students attribute oral–aural attrition during EMI, and what themes (including translanguaging) emerge?
+**RQ2 (students).** To what do students attribute their oral–aural attrition?
 
-**RQ3 (lecturers — light).** Do lecturers report translanguaging, for what reasons, and how do they perceive students’ English proficiency?
+**Follow-up in the semi-structured guide (not an RQ).** *Why do you think lecturers use Turkish so often?* Prepared in advance from observation over years. Ask it after the open answer. If the student already mentioned L1, tie it to their words. If not, ask it anyway and report it as planned. Two anticipated accounts only: lecturers’ limited English, and underrating of students’ English. Content security and shared L1 belong inside the second, not as a third theme.
 
-*(If you drop lecturers entirely, RQ3 becomes a student-only probe: “How do students describe lecturers’ English use, underrating, and translanguaging?”)*
+**RQ3 (lecturers).** When lecturers use L1, what do they say underlies that use? Expected answer, from observation: students’ low proficiency only. That answer is tied to the Golem effect.
 
-### Anticipated theme map
+### Working themes for RQ2 (students)
 
-| Theme cluster | Likely source | Links to |
+Keep three themes. Do not split written discourse from multimodality unless students talk about them as different reasons.
+
+| Theme | What it covers | Not a separate theme |
 | --- | --- | --- |
-| Translanguaging too often → little English talk | Students (+ lecturer probe) | Oral–aural attrition |
-| Lecturer English too weak for EMI | Students; some lecturers may admit discomfort | Argument A |
-| Lecturers underrate students → switch to Turkish | Students; lecturer self-ratings of student English | Argument B (Golem-adjacent, narrative not statistical) |
-| Materials / syllabi / books beyond student level | Students | Comprehension pressure → Turkish |
-| Written skills protected by EAP / assignment culture | Students (+ your theoretical framing) | Why R/W do not decline (EAP ≠ spoken ELFA) |
+| **Lecturer L1 / translanguaging** | Too frequent Turkish in class; little spoken English | Factors *inside* this theme, from 2b: lecturer’s own English; students assumed too weak (Golem only if lecturers later say so); content security; materials too hard in English |
+| **Written technical discourse** | Content carried by notes, problems, reports, textbooks | Inside the explanation: those texts are multimodal (diagrams, formulae, slides, figures). Same job as writing: meaning without extended speech |
+| **Peer talk in Turkish** | Labs, groups, and study talk also in L1, not only the lecturer’s speech | Worth keeping if students raise it. Oral–aural attrition then sits in the whole interaction, not only in the lecture |
+
+Assessment can stay inside the written-discourse theme: exams and reports do not require spoken English, so Listening and Speaking are not practised and Reading and Writing are.
 
 ### Student data plan
 
@@ -85,7 +87,7 @@ You do **not** need long lecturer interviews unless you want depth.
 | --- | --- |
 | 2.1 | Sampling: purposive from completers (vary major; include clear L/S decliners if IDs linkable) |
 | 2.2 | Protocol: semi-structured interview or open questionnaire |
-| 2.3 | Core prompts: Did Speaking/Listening feel worse? Why? Classroom language? Translanguaging? Lecturer English? Were you underestimated? Materials? Writing/reading different? |
+| 2.3 | Semi-structured. Open with RQ2. Then the prepared follow-up: “Why do you think lecturers use Turkish so often?” Expected from the researcher’s observation; not a second RQ. Listen also for written/visual technical work and peer talk in Turkish |
 | 2.4 | Analysis: thematic analysis (Braun & Clarke or similar) |
 | 2.5 | Joint display: QUANT skill pattern ↔ QUAL themes (explanatory integration) |
 
