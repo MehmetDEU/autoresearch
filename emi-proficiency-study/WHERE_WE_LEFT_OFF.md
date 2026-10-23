@@ -18,5 +18,8 @@ Explanatory sequential mixed methods (QUANT → QUAL)
 - Quant data: `EMI_quantitative_prepost_N120.xlsx`
 - Figure 1: `outputs/rstudio/fig1_skill_prepost_ggplot.png`
 
+## Lit review reminders
+See `LIT_REVIEW_NOTES.md`: main term = **translanguaging** (descriptive); code-switching optional; Li Wei (2018) + García & Li Wei (2014); compensatory = **motive**, not the definition of the practice.
+
 ## Next step
-Choose lecturer Option A/B/C in the roadmap; draft student interview guide (+ optional 3-question lecturer probe).
+Choose lecturer Option A/B/C in the roadmap; draft student interview guide (+ optional 3-question lecturer probe); then lit review using the notes above.
