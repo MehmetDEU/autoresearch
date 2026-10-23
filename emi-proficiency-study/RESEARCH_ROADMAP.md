@@ -53,7 +53,7 @@ You do **not** need long lecturer interviews unless you want depth.
 
 **Stop here for QUANT.** No regressions/mediation required for the story you outlined.
 
-**Scaffolding already exists** on this branch (slim workbook + Methods/Results draft + Fig 1).
+**Scaffolding locked on this branch** (slim workbook + Methods/Results with Nicol Play-It-Safe Tables 1–2 + sole Figure 1). Lead analysis = paired *t* (not MANOVA/RM-ANOVA); see `STATISTICAL_AND_FIGURE_DECISIONS.md`. Ready for Phase 2 QUAL.
 
 ---
 
