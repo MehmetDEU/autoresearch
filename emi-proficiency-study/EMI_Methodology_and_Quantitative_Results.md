@@ -33,7 +33,7 @@ Institutional academic English test covering Listening, Reading, Writing, and Sp
 
 ### Quantitative data analysis (RQ1 only)
 
-Paired-samples *t* tests (Wilcoxon signed-rank companions) for each skill and Overall; Cohen’s *d_z*; 95% CIs for mean differences (Nicol & Pexman, 2010a). Difference-score normality inspected with Shapiro–Wilk. One figure: grouped Pre vs Post means with 95% CIs. **No** mechanism regressions, mediation, underrating indices, or TL% correlations in this strand.
+Because RQ1 asks whether **each** skill (and Overall) changed from Pre to Post, the primary analyses were **paired-samples *t* tests** with Wilcoxon signed-rank companions, Cohen’s *d_z*, and 95% CIs for mean differences (Nicol & Pexman, 2010a, *t*-test Play-It-Safe format). Difference-score normality was inspected with Shapiro–Wilk. **MANOVA / RM-ANOVA were not used as the lead analysis:** a multivariate omnibus would still require skill-wise follow-ups and would add tables without answering skill-specific change more clearly. For publishing economy, results are limited to two Play-It-Safe tables and **one** grouped Pre–Post bar figure with 95% CIs (Nicol & Pexman, 2010b, bar-graph guidance). No mechanism regressions, mediation, or translanguaging indices enter the quantitative strand.
 
 ### Qualitative strand (RQ2–RQ3; next)
 
@@ -41,7 +41,9 @@ Lecturer accounts: whether/why they translanguage (often framed as compensating 
 
 ## Quantitative results (RQ1)
 
-All completers met the pretest threshold (Pre_Overall minimum = 60.1). At graduation, 18 students (15.0%) scored below 60 overall. Table 1 gives Pre/Post descriptives; Table 2 the paired tests; Figure 1 the Pre/Post means.
+### Preliminary descriptives
+
+All 120 completers met the institutional pretest threshold (Pre_Overall minimum = 60.1). Mean Overall declined from Pre (*M* = 66.79, *SD* = 4.61) to Post (*M* = 64.81, *SD* = 4.89). At graduation, 18 students (15.0%) scored below 60 overall. Table 1 summarises Pre and Post *M* and *SD* for each skill (Nicol & Pexman, 2010a, means Play-It-Safe format).
 
 ### Table 1
 
@@ -57,6 +59,10 @@ All completers met the pretest threshold (Pre_Overall minimum = 60.1). At gradua
 
 Note. Scores on the 0–100 institutional scale. PYP pass threshold = 60 (≈ CEFR B1).
 
+### Paired comparisons
+
+Table 2 reports paired-samples *t* tests for Pre−Post change (positive *M*diff = attrition). Speaking showed the largest significant decline (*M*diff = 5.10, *t*(119) = 12.21, *p* < .001, *d_z* = 1.11, 95% CI [4.27, 5.93]). Listening also declined significantly, but less sharply (*M*diff = 3.55, *t*(119) = 9.46, *p* < .001, *d_z* = 0.86, 95% CI [2.81, 4.29]). Reading (*M*diff = -0.41, *t*(119) = -1.26, *p* = .21, *d_z* = -0.11) and Writing (*M*diff = -0.35, *t*(119) = -0.93, *p* = .35, *d_z* = -0.09) did **not** decline; both showed small non-significant gains. Overall declined significantly (*M*diff = 1.97, *t*(119) = 8.50, *p* < .001, *d_z* = 0.78), reflecting the oral–aural losses.
+
 ### Table 2
 
 *Paired-Samples Tests of Pre–Post Change (N = 120)*
@@ -69,17 +75,17 @@ Note. Scores on the 0–100 institutional scale. PYP pass threshold = 60 (≈ CE
 | Speaking | 5.10 | 4.57 | 12.21 | < .001*** | 1.11 | [4.27, 5.93] |
 | Overall | 1.97 | 2.54 | 8.50 | < .001*** | 0.78 | [1.51, 2.43] |
 
-Note. Mdiff = Pre − Post (positive = attrition). *d_z* = Cohen’s *d* for paired designs. *p* < .05. **p* < .01. ***p* < .001.
+Note. *M*diff = Pre − Post (positive = attrition). *d_z* = Cohen’s *d* for paired designs. Wilcoxon signed-rank tests yielded the same significance decisions. \*p < .05. \*\*p < .01. \*\*\*p < .001. Format follows Nicol and Pexman (2010a) Play-It-Safe multi-*t*-test presentation.
 
-### Interpretation (quantitative only)
+### Summary for the mixed-methods sequence
 
-Listening declined significantly (Mdiff = 3.55, *t*(119) = 9.46, *p* < .001, *d_z* = 0.86). Speaking declined significantly and most strongly (Mdiff = 5.10, *t*(119) = 12.21, *p* < .001, *d_z* = 1.11). Reading (Mdiff = -0.41, *p* = .21) and Writing (Mdiff = -0.35, *p* = .35) did **not** decline significantly; both showed small non-significant gains. These oral–aural losses motivate the qualitative phase (RQ2–RQ3) on translanguaging and EMI language practices—not further quantitative mechanism tests.
+Quantitatively, attrition is concentrated in the oral–aural skills, with **Speaking** showing the greatest loss and **Listening** a substantial secondary loss; **Reading** and **Writing** remain statistically stable (slight non-significant gains), consistent with greater dependence on written EAP discourse during the degree. Figure 1 displays the Pre vs Post means. These skill-specific results close the quantitative strand (RQ1) and motivate the forthcoming qualitative strand (RQ2–RQ3) on translanguaging and related attributions—without further QUANT mechanism modelling.
 
-## Figures
+## Figure
 
 ![Figure 1. Pre vs Post means by skill](outputs/rstudio/fig1_skill_prepost_ggplot.png)
 
-Figure 1. Mean Pre (PYP exit) and Post (graduation) scores by skill with 95% CIs (RStudio / ggplot2). Threshold = 60.
+**Figure 1.** Mean Pre (PYP exit) and Post (graduation) scores by skill with 95% CIs of the mean (0–100 scale; threshold = 60). Only publication figure (Nicol & Pexman, 2010b).
 
 ## References (selected)
 

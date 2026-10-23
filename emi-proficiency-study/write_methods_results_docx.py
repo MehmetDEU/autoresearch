@@ -237,10 +237,15 @@ def build_md(s: pd.DataFrame, pst: pd.DataFrame) -> str:
     lines.append("### Quantitative data analysis (RQ1 only)")
     lines.append("")
     lines.append(
-        "Paired-samples *t* tests (Wilcoxon signed-rank companions) for each skill and Overall; "
-        "Cohen’s *d_z*; 95% CIs for mean differences (Nicol & Pexman, 2010a). Difference-score normality "
-        "inspected with Shapiro–Wilk. One figure: grouped Pre vs Post means with 95% CIs. "
-        "**No** mechanism regressions, mediation, underrating indices, or TL% correlations in this strand."
+        "Because RQ1 asks whether **each** skill (and Overall) changed from Pre to Post, the primary "
+        "analyses were **paired-samples *t* tests** with Wilcoxon signed-rank companions, Cohen’s *d_z*, "
+        "and 95% CIs for mean differences (Nicol & Pexman, 2010a, *t*-test Play-It-Safe format). "
+        "Difference-score normality was inspected with Shapiro–Wilk. "
+        "**MANOVA / RM-ANOVA were not used as the lead analysis:** a multivariate omnibus would still "
+        "require skill-wise follow-ups and would add tables without answering skill-specific change more "
+        "clearly. For publishing economy, results are limited to two Play-It-Safe tables and **one** "
+        "grouped Pre–Post bar figure with 95% CIs (Nicol & Pexman, 2010b, bar-graph guidance). "
+        "No mechanism regressions, mediation, or translanguaging indices enter the quantitative strand."
     )
     lines.append("")
     lines.append("### Qualitative strand (RQ2–RQ3; next)")
@@ -256,10 +261,19 @@ def build_md(s: pd.DataFrame, pst: pd.DataFrame) -> str:
     lines.append("")
     pre_min = s["Pre_Overall"].min()
     below = int((s["Post_Overall"] < 60).sum())
+    overall = pst.loc[pst["Skill"] == "Overall"].iloc[0]
+    listen = pst.loc[pst["Skill"] == "Listening"].iloc[0]
+    speak = pst.loc[pst["Skill"] == "Speaking"].iloc[0]
+    read = pst.loc[pst["Skill"] == "Reading"].iloc[0]
+    write = pst.loc[pst["Skill"] == "Writing"].iloc[0]
+    lines.append("### Preliminary descriptives")
+    lines.append("")
     lines.append(
-        f"All completers met the pretest threshold (Pre_Overall minimum = {pre_min:.1f}). "
-        f"At graduation, {below} students ({100 * below / n:.1f}%) scored below 60 overall. "
-        "Table 1 gives Pre/Post descriptives; Table 2 the paired tests; Figure 1 the Pre/Post means."
+        f"All {n} completers met the institutional pretest threshold (Pre_Overall minimum = {pre_min:.1f}). "
+        f"Mean Overall declined from Pre (*M* = {overall['Pre_M']:.2f}, *SD* = {overall['Pre_SD']:.2f}) to "
+        f"Post (*M* = {overall['Post_M']:.2f}, *SD* = {overall['Post_SD']:.2f}). At graduation, "
+        f"{below} students ({100 * below / n:.1f}%) scored below 60 overall. Table 1 summarises Pre and Post "
+        "*M* and *SD* for each skill (Nicol & Pexman, 2010a, means Play-It-Safe format)."
     )
     lines.append("")
     lines.append("### Table 1")
@@ -277,6 +291,24 @@ def build_md(s: pd.DataFrame, pst: pd.DataFrame) -> str:
         "Note. Scores on the 0–100 institutional scale. PYP pass threshold = 60 (≈ CEFR B1)."
     )
     lines.append("")
+    lines.append("### Paired comparisons")
+    lines.append("")
+    lines.append(
+        "Table 2 reports paired-samples *t* tests for Pre−Post change (positive *M*diff = attrition). "
+        "Speaking showed the largest significant decline "
+        f"(*M*diff = {speak['Mdiff']:.2f}, *t*(119) = {speak['t']:.2f}, *p* {fmt_p(speak['p'])}, "
+        f"*d_z* = {speak['dz']:.2f}, 95% CI [{speak['lo']:.2f}, {speak['hi']:.2f}]). "
+        "Listening also declined significantly, but less sharply "
+        f"(*M*diff = {listen['Mdiff']:.2f}, *t*(119) = {listen['t']:.2f}, *p* {fmt_p(listen['p'])}, "
+        f"*d_z* = {listen['dz']:.2f}, 95% CI [{listen['lo']:.2f}, {listen['hi']:.2f}]). "
+        f"Reading (*M*diff = {read['Mdiff']:.2f}, *t*(119) = {read['t']:.2f}, *p* {fmt_p(read['p'])}, "
+        f"*d_z* = {read['dz']:.2f}) and Writing (*M*diff = {write['Mdiff']:.2f}, *t*(119) = {write['t']:.2f}, "
+        f"*p* {fmt_p(write['p'])}, *d_z* = {write['dz']:.2f}) did **not** decline; both showed small "
+        "non-significant gains. Overall declined significantly "
+        f"(*M*diff = {overall['Mdiff']:.2f}, *t*(119) = {overall['t']:.2f}, *p* {fmt_p(overall['p'])}, "
+        f"*d_z* = {overall['dz']:.2f}), reflecting the oral–aural losses."
+    )
+    lines.append("")
     lines.append("### Table 2")
     lines.append("")
     lines.append("*Paired-Samples Tests of Pre–Post Change (N = 120)*")
@@ -290,35 +322,30 @@ def build_md(s: pd.DataFrame, pst: pd.DataFrame) -> str:
         )
     lines.append("")
     lines.append(
-        "Note. Mdiff = Pre − Post (positive = attrition). *d_z* = Cohen’s *d* for paired designs. "
-        "*p* < .05. **p* < .01. ***p* < .001."
+        "Note. *M*diff = Pre − Post (positive = attrition). *d_z* = Cohen’s *d* for paired designs. "
+        "Wilcoxon signed-rank tests yielded the same significance decisions. "
+        "\\*p < .05. \\*\\*p < .01. \\*\\*\\*p < .001. Format follows Nicol and Pexman (2010a) Play-It-Safe "
+        "multi-*t*-test presentation."
     )
     lines.append("")
-    listen = pst.loc[pst["Skill"] == "Listening"].iloc[0]
-    speak = pst.loc[pst["Skill"] == "Speaking"].iloc[0]
-    read = pst.loc[pst["Skill"] == "Reading"].iloc[0]
-    write = pst.loc[pst["Skill"] == "Writing"].iloc[0]
-    lines.append("### Interpretation (quantitative only)")
+    lines.append("### Summary for the mixed-methods sequence")
     lines.append("")
     lines.append(
-        f"Listening declined significantly (Mdiff = {listen['Mdiff']:.2f}, "
-        f"*t*(119) = {listen['t']:.2f}, *p* {fmt_p(listen['p'])}, *d_z* = {listen['dz']:.2f}). "
-        f"Speaking declined significantly and most strongly "
-        f"(Mdiff = {speak['Mdiff']:.2f}, *t*(119) = {speak['t']:.2f}, *p* {fmt_p(speak['p'])}, "
-        f"*d_z* = {speak['dz']:.2f}). "
-        f"Reading (Mdiff = {read['Mdiff']:.2f}, *p* {fmt_p(read['p'])}) and Writing "
-        f"(Mdiff = {write['Mdiff']:.2f}, *p* {fmt_p(write['p'])}) did **not** decline significantly; "
-        "both showed small non-significant gains. These oral–aural losses motivate the qualitative phase "
-        "(RQ2–RQ3) on translanguaging and EMI language practices—not further quantitative mechanism tests."
+        "Quantitatively, attrition is concentrated in the oral–aural skills, with **Speaking** showing the "
+        "greatest loss and **Listening** a substantial secondary loss; **Reading** and **Writing** remain "
+        "statistically stable (slight non-significant gains), consistent with greater dependence on written "
+        "EAP discourse during the degree. Figure 1 displays the Pre vs Post means. These skill-specific "
+        "results close the quantitative strand (RQ1) and motivate the forthcoming qualitative strand "
+        "(RQ2–RQ3) on translanguaging and related attributions—without further QUANT mechanism modelling."
     )
     lines.append("")
-    lines.append("## Figures")
+    lines.append("## Figure")
     lines.append("")
     lines.append("![Figure 1. Pre vs Post means by skill](outputs/rstudio/fig1_skill_prepost_ggplot.png)")
     lines.append("")
     lines.append(
-        "Figure 1. Mean Pre (PYP exit) and Post (graduation) scores by skill with 95% CIs "
-        "(RStudio / ggplot2). Threshold = 60."
+        "**Figure 1.** Mean Pre (PYP exit) and Post (graduation) scores by skill with 95% CIs of the mean "
+        "(0–100 scale; threshold = 60). Only publication figure (Nicol & Pexman, 2010b)."
     )
     lines.append("")
     lines.append("## References (selected)")
@@ -384,15 +411,14 @@ def build_docx(s: pd.DataFrame, pst: pd.DataFrame) -> Document:
     )
     add_para(
         doc,
-        "RQ2 (Qualitative — lecturers). How do content lecturers describe whether and why they use "
-        "translanguaging in EMI courses?",
+        "RQ2 (Qualitative — students; primary). To what do students attribute oral–aural attrition during "
+        "EMI, and what themes emerge (including frequent translanguaging)?",
         first_line=False,
     )
     add_para(
         doc,
-        "RQ3 (Qualitative — students). How do students experience EMI classroom language practices, and "
-        "how do they relate those practices to changes in their English proficiency—especially Listening "
-        "and Speaking?",
+        "RQ3 (Qualitative — lecturers; optional/light). Do lecturers report translanguaging, for what "
+        "reasons, and how do they perceive students’ English?",
         first_line=False,
     )
 
@@ -437,11 +463,15 @@ def build_docx(s: pd.DataFrame, pst: pd.DataFrame) -> Document:
     add_heading_styled(doc, "Quantitative data analysis", level=2)
     add_para(
         doc,
-        "Analyses addressed RQ1 only: paired-samples t tests and Wilcoxon signed-rank companions for each "
-        "skill and Overall, with Cohen’s d_z and 95% confidence intervals for mean differences "
-        "(Nicol & Pexman, 2010a). Shapiro–Wilk tests inspected difference-score distributions. Results are "
-        "reported in Play-It-Safe tables and one Pre–Post figure (Nicol & Pexman, 2010b). Explanatory "
-        "accounts of attrition are reserved for the qualitative strand.",
+        "Analyses addressed RQ1 only. Because the question concerns skill-specific Pre–Post change, "
+        "paired-samples t tests (with Wilcoxon signed-rank companions) were run for Listening, Reading, "
+        "Writing, Speaking, and Overall, reporting Cohen’s d_z and 95% confidence intervals for mean "
+        "differences (Nicol & Pexman, 2010a, t-test Play-It-Safe format). Shapiro–Wilk tests inspected "
+        "difference-score distributions. MANOVA and repeated-measures ANOVA were not adopted as lead "
+        "analyses: a multivariate omnibus would still require univariate follow-ups and would expand the "
+        "results section without clarifying which skills declined. For publishing economy, presentation is "
+        "limited to two tables and one grouped Pre–Post bar figure with 95% CIs (Nicol & Pexman, 2010b). "
+        "Explanatory accounts of attrition are reserved for the qualitative strand.",
     )
 
     add_heading_styled(doc, "Qualitative strand (forthcoming)", level=2)
@@ -458,12 +488,21 @@ def build_docx(s: pd.DataFrame, pst: pd.DataFrame) -> Document:
     add_heading_styled(doc, "Quantitative results (RQ1)", level=1)
     pre_min = float(s["Pre_Overall"].min())
     below = int((s["Post_Overall"] < 60).sum())
+    overall = pst.loc[pst["Skill"] == "Overall"].iloc[0]
+    listen = pst.loc[pst["Skill"] == "Listening"].iloc[0]
+    speak = pst.loc[pst["Skill"] == "Speaking"].iloc[0]
+    read = pst.loc[pst["Skill"] == "Reading"].iloc[0]
+    write = pst.loc[pst["Skill"] == "Writing"].iloc[0]
+
+    add_heading_styled(doc, "Preliminary descriptives", level=2)
     add_para(
         doc,
         f"All {n} completers scored at or above the institutional threshold at pretest "
-        f"(Pre_Overall minimum = {pre_min:.1f}). At graduation, {below} students "
-        f"({100 * below / n:.1f}%) scored below 60 overall. Table 1 reports Pre/Post descriptives; "
-        "Table 2 reports paired tests; Figure 1 displays Pre vs Post means.",
+        f"(Pre_Overall minimum = {pre_min:.1f}). Mean Overall declined from Pre "
+        f"(M = {overall['Pre_M']:.2f}, SD = {overall['Pre_SD']:.2f}) to Post "
+        f"(M = {overall['Post_M']:.2f}, SD = {overall['Post_SD']:.2f}). At graduation, {below} students "
+        f"({100 * below / n:.1f}%) scored below 60 overall. Table 1 reports Pre and Post means and "
+        "standard deviations by skill in a Play-It-Safe means format (Nicol & Pexman, 2010a).",
     )
 
     # Table 1
@@ -489,13 +528,34 @@ def build_docx(s: pd.DataFrame, pst: pd.DataFrame) -> Document:
             t1.rows[i].cells[j].text = v
     style_table_apa(t1)
 
+    add_heading_styled(doc, "Paired-samples comparisons", level=2)
+    add_para(
+        doc,
+        "Table 2 presents paired-samples t tests for Pre–Post change (Mdiff = Pre − Post; positive values "
+        "indicate attrition), following Nicol and Pexman’s (2010a) Play-It-Safe multi-t-test layout. "
+        f"Speaking showed the largest significant decline (Mdiff = {speak['Mdiff']:.2f}, "
+        f"t(119) = {speak['t']:.2f}, p {fmt_p(speak['p'])}, d_z = {speak['dz']:.2f}, "
+        f"95% CI [{speak['lo']:.2f}, {speak['hi']:.2f}]). Listening also declined significantly, "
+        f"though less sharply (Mdiff = {listen['Mdiff']:.2f}, t(119) = {listen['t']:.2f}, "
+        f"p {fmt_p(listen['p'])}, d_z = {listen['dz']:.2f}, "
+        f"95% CI [{listen['lo']:.2f}, {listen['hi']:.2f}]). "
+        f"Reading (Mdiff = {read['Mdiff']:.2f}, t(119) = {read['t']:.2f}, p {fmt_p(read['p'])}, "
+        f"d_z = {read['dz']:.2f}) and Writing (Mdiff = {write['Mdiff']:.2f}, t(119) = {write['t']:.2f}, "
+        f"p {fmt_p(write['p'])}, d_z = {write['dz']:.2f}) did not decline; both showed small "
+        "non-significant gains. Overall declined significantly "
+        f"(Mdiff = {overall['Mdiff']:.2f}, t(119) = {overall['t']:.2f}, p {fmt_p(overall['p'])}, "
+        f"d_z = {overall['dz']:.2f}), reflecting the oral–aural losses. Wilcoxon signed-rank tests "
+        "supported the same significance decisions.",
+    )
+
     # Table 2
     add_table_caption(
         doc,
         "Table 2",
         "Paired-Samples Tests of Pre–Post Change (N = 120)",
         note="Mdiff = Pre − Post (positive = attrition). d_z = Cohen’s d for paired designs. "
-        "95% CIs are for mean differences. *p < .05. **p < .01. ***p < .001.",
+        "95% CIs are for mean differences. Wilcoxon signed-rank p values were consistent with the "
+        "paired t conclusions. *p < .05. **p < .01. ***p < .001.",
     )
     t2 = doc.add_table(rows=1 + len(pst), cols=7)
     hdr2 = ["Skill", "Mdiff", "SD", "t(119)", "p", "d_z", "95% CI"]
@@ -515,19 +575,16 @@ def build_docx(s: pd.DataFrame, pst: pd.DataFrame) -> Document:
             t2.rows[i].cells[j].text = v
     style_table_apa(t2)
 
-    listen = pst.loc[pst["Skill"] == "Listening"].iloc[0]
-    speak = pst.loc[pst["Skill"] == "Speaking"].iloc[0]
-    read = pst.loc[pst["Skill"] == "Reading"].iloc[0]
-    write = pst.loc[pst["Skill"] == "Writing"].iloc[0]
+    add_heading_styled(doc, "Summary for the mixed-methods sequence", level=2)
     add_para(
         doc,
-        f"Listening declined significantly (Mdiff = {listen['Mdiff']:.2f}, t(119) = {listen['t']:.2f}, "
-        f"p {fmt_p(listen['p'])}, d_z = {listen['dz']:.2f}). Speaking declined significantly and most "
-        f"strongly (Mdiff = {speak['Mdiff']:.2f}, t(119) = {speak['t']:.2f}, p {fmt_p(speak['p'])}, "
-        f"d_z = {speak['dz']:.2f}). Reading (Mdiff = {read['Mdiff']:.2f}, p {fmt_p(read['p'])}) and "
-        f"Writing (Mdiff = {write['Mdiff']:.2f}, p {fmt_p(write['p'])}) did not decline significantly; "
-        "both showed small non-significant gains. These oral–aural losses motivate the qualitative phase "
-        "(RQ2–RQ3).",
+        "Taken together, quantitative attrition is concentrated in the oral–aural skills: Speaking shows "
+        "the greatest loss and Listening a substantial secondary loss, whereas Reading and Writing remain "
+        "statistically stable (slight non-significant gains), consistent with stronger reliance on written "
+        "EAP discourse during the degree. Figure 1 displays Pre versus Post means with 95% confidence "
+        "intervals and is the sole publication figure. These results answer RQ1 and motivate the "
+        "qualitative strand (RQ2–RQ3) on translanguaging and related attributions, without additional "
+        "quantitative mechanism models.",
     )
 
     fig1 = ROOT / "outputs" / "rstudio" / "fig1_skill_prepost_ggplot.png"
@@ -538,10 +595,10 @@ def build_docx(s: pd.DataFrame, pst: pd.DataFrame) -> Document:
             doc,
             "Figure 1",
             "Mean Pre (PYP exit) and Post (graduation) scores by skill with 95% confidence intervals "
-            "of the mean (0–100 scale). Listening and Speaking decline; Reading and Writing do not. "
-            "PYP pass threshold = 60.",
-            note="Grouped bars (ggplot2 / RStudio). Error bars = 95% CIs of the mean "
-            "(Nicol & Pexman, 2010b).",
+            "of the mean (0–100 scale). Speaking shows the largest decline, then Listening; Reading and "
+            "Writing do not decline. PYP pass threshold = 60.",
+            note="Grouped bar graph (Nicol & Pexman, 2010b). Error bars = 95% CIs of the mean. "
+            "Only figure retained for publishing economy.",
         )
         doc.add_picture(str(fig1), width=Inches(5.9))
         doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
