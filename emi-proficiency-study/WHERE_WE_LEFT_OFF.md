@@ -7,17 +7,16 @@
 ## Design locked
 Explanatory sequential mixed methods (QUANT → QUAL)
 
-- **RQ1 (quant, done scaffolding):** Pre vs Post proficiency (4 skills + Overall) → Listening & Speaking decline
-- **RQ2 (qual, next):** Lecturers on translanguaging
-- **RQ3 (qual, next):** Students on EMI language practices & oral–aural decline
+- **RQ1 (quant, scaffolding done):** Pre vs Post → Listening & Speaking decline; R/W stable (EAP / written discourse)
+- **RQ2 (qual, students primary):** attribution of oral–aural attrition (translanguaging, underrating, lecturer English)
+- **RQ3 (qual, lecturers light/optional):** short probe on translanguaging + perceived student proficiency
 
 ## Open these to resume
-- Paper (editor): `emi-proficiency-study/EMI_Methodology_and_Quantitative_Results.md`
-- Paper (Word): `EMI_Methodology_and_Quantitative_Results.docx`
-- Paper (browser): `EMI_Methodology_and_Quantitative_Results.html`
+- Roadmap: `RESEARCH_ROADMAP.md`
 - RQs: `RESEARCH_QUESTIONS.md`
+- Paper: `EMI_Methodology_and_Quantitative_Results.md` / `.docx` / `.html`
 - Quant data: `EMI_quantitative_prepost_N120.xlsx`
-- Figure 1: `figures/fig1_skill_prepost_ggplot.png`
+- Figure 1: `outputs/rstudio/fig1_skill_prepost_ggplot.png`
 
 ## Next step
-Build qualitative data (lecturer + student) and analysis for RQ2–RQ3.
+Choose lecturer Option A/B/C in the roadmap; draft student interview guide (+ optional 3-question lecturer probe).
