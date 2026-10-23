@@ -17,20 +17,17 @@ To what extent do students’ institutional English proficiency scores change fr
 
 *Anticipated pattern (synthetic panel for scaffolding):* statistically significant decline in **Listening** and **Speaking**; no statistically significant decline in **Reading** or **Writing** (slight non-significant gains possible from written academic exposure).
 
-### RQ2 (Qualitative — lecturers)
+### RQ2 (Qualitative — students; primary)
 
-How do content lecturers describe whether and why they use translanguaging (Turkish alongside English) in EMI courses?
+To what do students attribute oral–aural attrition during EMI, and what themes emerge (including frequent translanguaging)?
 
-*Anticipated themes:* translanguaging as a compensatory strategy when lecturers judge students’ English insufficient for content learning; securing content knowledge even at the expense of English-medium interaction.
+*Anticipated themes:* translanguaging too often → little English talk; lecturers’ English too weak for EMI; lecturers underrate students and switch to Turkish; materials beyond student level; felt worsening of Listening/Speaking. Reading/Writing held up because courses are more EAP / written-discourse dependent than spoken ELFA-like interaction.
 
-### RQ3 (Qualitative — students)
+### RQ3 (Qualitative — lecturers; optional / light)
 
-How do students experience EMI classroom language practices, and how do they relate those practices to changes in their English proficiency—especially Listening and Speaking?
+Do lecturers report translanguaging, for what reasons, and how do they perceive students’ English?
 
-*Anticipated themes:*
-- some students report that lecturers’ English and/or course materials (syllabi, books) exceed their proficiency and impede comprehension;
-- other students report that lecturers’ own English is not strong enough for sustained EMI teaching;
-- in either case, limited verbal interaction in English and frequent translanguaging are linked to a felt decline in oral–aural proficiency (“not that good, and getting worse”).
+*Default:* short probe (not full interviews)—frequency of translanguaging, reasons, and perception of student proficiency. Full lecturer interviews only if needed. Lecturer strand can be dropped if student themes are sufficient (see `RESEARCH_ROADMAP.md`).
 
 ---
 
