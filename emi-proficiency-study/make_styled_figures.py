@@ -530,47 +530,63 @@ def _style_pub_axes(ax, *, grid_y: bool = True, grid_x: bool = False) -> None:
     ax.set_axisbelow(True)
 
 
+def _apa_stars(p: float) -> str:
+    if p < 0.001:
+        return "***"
+    if p < 0.01:
+        return "**"
+    if p < 0.05:
+        return "*"
+    return "n.s."
+
+
 def make_fig1_skill_decline(s: pd.DataFrame, outdir: Path) -> Path:
-    """Publication Figure 1: polished grouped Pre vs Post means."""
+    """Publication Figure 1: calm journal Pre vs Post means (Nicol bar-graph spirit)."""
     df = _skill_prepost_summary(s)
     outdir.mkdir(parents=True, exist_ok=True)
 
-    fig, ax = plt.subplots(figsize=(9.6, 6.0), facecolor="#F7F9FB")
-    _style_pub_axes(ax)
-    x = np.arange(len(df))
-    width = 0.34
-    pre_color, post_color = "#3D6F9C", "#E08A2E"
+    # Quiet academic palette — slate + copper (not default Tableau blue/orange)
+    pre_color, post_color = "#2F4A66", "#B5683C"
+    ink, muted, grid = "#1C2430", "#6B7280", "#ECEFF2"
 
+    fig, ax = plt.subplots(figsize=(9.0, 5.4), facecolor="white")
+    ax.set_facecolor("white")
+    for spine in ("top", "right"):
+        ax.spines[spine].set_visible(False)
+    ax.spines["left"].set_color("#B8C0C8")
+    ax.spines["bottom"].set_color("#B8C0C8")
+    ax.tick_params(colors=muted, labelsize=9.5, length=3, width=0.7)
+    ax.yaxis.grid(True, color=grid, linewidth=0.85, zorder=0)
+    ax.set_axisbelow(True)
+
+    x = np.arange(len(df))
+    width = 0.36
     ax.bar(
         x - width / 2,
         df["Pre_Mean"],
         width,
         color=pre_color,
-        edgecolor="white",
-        linewidth=1.0,
+        edgecolor="none",
         label="Pre (PYP exit)",
         zorder=3,
-        alpha=0.95,
     )
     ax.bar(
         x + width / 2,
         df["Post_Mean"],
         width,
         color=post_color,
-        edgecolor="white",
-        linewidth=1.0,
+        edgecolor="none",
         label="Post (graduation)",
         zorder=3,
-        alpha=0.95,
     )
     ax.errorbar(
         x - width / 2,
         df["Pre_Mean"],
         yerr=[df["Pre_Mean"] - df["Pre_lo"], df["Pre_hi"] - df["Pre_Mean"]],
         fmt="none",
-        ecolor="#2C3640",
-        elinewidth=1.0,
-        capsize=3.5,
+        ecolor=ink,
+        elinewidth=0.9,
+        capsize=2.8,
         zorder=4,
     )
     ax.errorbar(
@@ -578,108 +594,97 @@ def make_fig1_skill_decline(s: pd.DataFrame, outdir: Path) -> Path:
         df["Post_Mean"],
         yerr=[df["Post_Mean"] - df["Post_lo"], df["Post_hi"] - df["Post_Mean"]],
         fmt="none",
-        ecolor="#2C3640",
-        elinewidth=1.0,
-        capsize=3.5,
+        ecolor=ink,
+        elinewidth=0.9,
+        capsize=2.8,
         zorder=4,
     )
 
-    # Soft family underlays (oral–aural vs written)
+    # Lean annotations: signed Post−Pre change + APA stars (no badge boxes)
     for i, (_, row) in enumerate(df.iterrows()):
-        if row["Family"] == "Oral–aural":
-            ax.axvspan(i - 0.48, i + 0.48, color="#F8E8E8", alpha=0.55, zorder=0)
-        elif row["Family"] == "Written":
-            ax.axvspan(i - 0.48, i + 0.48, color="#E8F3F1", alpha=0.55, zorder=0)
-
-    for i, (_, row) in enumerate(df.iterrows()):
-        delta = row["Mean_decline"]
-        if delta > 0.05:
-            label = f"↓ {delta:.1f}   {row['Sig']}"
-            color = "#C0392B"
-            face = "#FDEDEC"
-        elif delta < -0.05:
-            label = f"↑ {abs(delta):.1f}   {row['Sig']}"
-            color = "#1E8449"
-            face = "#E8F8F0"
+        mdiff = row["Mean_decline"]  # Pre − Post; positive = attrition
+        change = -mdiff  # Post − Pre (negative = decline)
+        stars = _apa_stars(row["p"])
+        if abs(change) < 0.05:
+            label = f"0  {stars}"
         else:
-            label = f"≈ 0   {row['Sig']}"
-            color = "#555555"
-            face = "#F2F3F4"
-        y = max(row["Pre_hi"], row["Post_hi"]) + 0.85
+            label = f"{change:+.1f}  {stars}"
+        color = "#8B3A2F" if (change < -0.05 and stars != "n.s.") else muted
+        y = max(row["Pre_hi"], row["Post_hi"]) + 0.55
         ax.text(
             i,
             y,
             label,
             ha="center",
             va="bottom",
-            fontsize=8,
+            fontsize=8.2,
             color=color,
-            fontweight="bold",
-            bbox={
-                "boxstyle": "round,pad=0.28",
-                "facecolor": face,
-                "edgecolor": "none",
-                "alpha": 0.95,
-            },
+            fontweight="bold" if stars != "n.s." else "normal",
             zorder=5,
         )
 
-    ax.axhline(60, color="#8A949E", ls=(0, (4, 3)), lw=1.15, zorder=2)
+    ax.axhline(60, color="#9AA3AD", ls=(0, (3, 2.5)), lw=1.0, zorder=2)
     ax.text(
-        len(df) - 0.55,
-        60.35,
-        "threshold 60",
+        len(df) - 0.42,
+        60.28,
+        "threshold = 60",
         ha="right",
         va="bottom",
         fontsize=7.5,
-        color="#6A737C",
+        color=muted,
         style="italic",
     )
     ax.set_xticks(x)
-    ax.set_xticklabels(list(df["Skill"]), fontsize=10, color="#1B1F24")
-    ax.set_ylabel("Mean score (0–100 institutional scale)", fontsize=10, color="#4A5560")
-    ax.set_ylim(55, max(df["Pre_hi"].max(), df["Post_hi"].max()) + 5.2)
-    ax.set_xlim(-0.6, len(df) - 0.4)
+    ax.set_xticklabels(list(df["Skill"]), fontsize=10.5, color=ink)
+    ax.set_ylabel("Mean score (0–100)", fontsize=10, color=muted)
+    y_top = max(df["Pre_hi"].max(), df["Post_hi"].max()) + 3.2
+    ax.set_ylim(57, y_top)
+    ax.set_xlim(-0.55, len(df) - 0.45)
+
     fig.suptitle(
-        "Figure 1. Mean Pre and Post scores by skill (N = 120)",
+        "Mean Pre and Post scores by skill (N = 120)",
         x=0.02,
         ha="left",
-        fontsize=13,
+        fontsize=12.5,
         fontweight="bold",
-        color="#1B1F24",
+        color=ink,
         y=0.98,
     )
     ax.set_title(
-        "Oral–aural skills decline; written skills do not  ·  error bars = 95% CI of the mean",
+        "Error bars = 95% CI of the mean. Labels = Post − Pre (negative = attrition).",
         loc="left",
-        fontsize=9,
-        color="#5C6670",
-        pad=10,
+        fontsize=8.2,
+        color=muted,
+        pad=8,
     )
     leg = ax.legend(
-        frameon=True,
-        fancybox=False,
-        edgecolor="#D5DBE1",
-        fontsize=8.5,
-        loc="lower right",
-        framealpha=0.96,
+        frameon=False,
+        fontsize=9,
+        loc="upper right",
+        bbox_to_anchor=(1.0, 0.98),
+        ncol=1,
+        handlelength=1.1,
+        borderaxespad=0.2,
     )
-    leg.get_frame().set_linewidth(0.8)
-    # Small family key
-    ax.text(
-        0.01,
-        0.02,
-        "Shaded panels:  rose = oral–aural   ·   teal = written",
-        transform=ax.transAxes,
-        fontsize=7.5,
-        color="#7A848E",
-        va="bottom",
-    )
+    for t in leg.get_texts():
+        t.set_color(ink)
 
     path = outdir / "fig1_skill_mean_decline.png"
-    fig.tight_layout(rect=(0, 0, 1, 0.95))
-    fig.savefig(path, dpi=180, facecolor=fig.get_facecolor())
+    fig.tight_layout(rect=(0.02, 0.02, 0.99, 0.92))
+    fig.savefig(path, dpi=200, facecolor="white")
+    # Preferred manuscript path (RStudio naming kept for continuity)
+    rst = outdir.parent / "rstudio" if outdir.name != "rstudio" else outdir
+    rst.mkdir(parents=True, exist_ok=True)
+    rst_path = rst / "fig1_skill_prepost_ggplot.png"
+    fig.savefig(rst_path, dpi=200, facecolor="white")
     plt.close(fig)
+
+    art = Path("/opt/cursor/artifacts")
+    if art.is_dir():
+        import shutil
+
+        shutil.copy2(rst_path, art / "fig1_skill_prepost_ggplot.png")
+        shutil.copy2(path, art / "fig1_skill_mean_decline.png")
 
     tab_dir = outdir.parent / "tableau"
     tab_dir.mkdir(parents=True, exist_ok=True)

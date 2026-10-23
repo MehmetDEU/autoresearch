@@ -10,6 +10,8 @@
 Grouped **Pre vs Post** mean scores by skill with 95% CIs of the mean.  
 Threshold line = 60. Pattern: Listening & Speaking decline; Reading & Writing do not.
 
+**Style (journal polish):** slate / copper bars, white ground, lean Post−Pre labels with APA stars (no family shading or badge boxes). Prior version archived as `outputs/archive/fig1_*_before_polish.png`.
+
 ## Not for the manuscript
 
 Anything under `outputs/rstudio/fig2*` or `outputs/tableau/` or archived scatters.
@@ -17,7 +19,7 @@ Anything under `outputs/rstudio/fig2*` or `outputs/tableau/` or archived scatter
 ## Rebuild
 
 ```bash
+python3 polish_fig1.py
+# or R:
 Rscript rstudio/fig1_skill_prepost.R
-# Python fallback (this environment):
-python3 make_styled_figures.py
 ```
